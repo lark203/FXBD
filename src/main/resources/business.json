@@ -1,0 +1,26 @@
+{
+	"code":0,
+	"message":"操作成功！",
+	"result":{
+		"endRow":784,
+		"firstPage":true,
+		"hasNextPage":false,
+		"hasPreviousPage":false,
+		"navigateFirstPage":1,
+		"navigateLastPage":1,
+		"navigatePages":8,
+		"navigatepageNums":[
+			1
+		],
+		"nextPage":0,
+		"pageNum":1,
+		"pageSize":2000,
+		"pages":1,
+		"prePage":0,
+		"size":784,
+		"startRow":1,
+		"total":784
+	},
+	"success":true,
+	"timestamp":"2025-11-12T15:21:53+08:00"
+}

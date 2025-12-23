@@ -1,0 +1,13 @@
+OPEN=1
+COMMENT=2
+EntityRef=3
+TEXT=4
+CLOSE=5
+SLASH_CLOSE=6
+EQUIALS=7
+STARING=8
+Name=9
+S=10
+'<'=1
+'>'=5
+'/>'=6
