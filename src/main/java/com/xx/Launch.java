@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.Random;
 
 public class Launch extends Application {
     public static BDMapping ROOT_MAPPING = new BDMapping();
@@ -41,8 +40,6 @@ public class Launch extends Application {
         stage.setScene(scene);
         Application.setUserAgentStylesheet(Util.getResourceUrl("/css/cupertino-light.css"));
         stage.show();
-
-        // test
     }
 
     public BDTab initTab(Path path) {
