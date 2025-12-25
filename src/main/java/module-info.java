@@ -1,4 +1,4 @@
-module FXEditor {
+module FXBD {
     requires antlr4;
     requires javafx.base;
     requires javafx.controls;

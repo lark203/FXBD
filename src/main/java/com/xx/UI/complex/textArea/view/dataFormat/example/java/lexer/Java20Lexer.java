@@ -1,4 +1,4 @@
-// Generated from F:/project/java/FXEditor/src/main/java/com/xx/antlr/Java/Java20Lexer.g4 by ANTLR 4.13.2
+// Generated from F:/project/java/FXBD/src/main/java/com/xx/antlr/Java/Java20Lexer.g4 by ANTLR 4.13.2
 package com.xx.UI.complex.textArea.view.dataFormat.example.java.lexer;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;

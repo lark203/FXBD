@@ -1,4 +1,4 @@
-// Generated from F:/project/java/FXEditor/src/main/java/com/xx/Expr/lexer/Expr.g4 by ANTLR 4.13.2
+// Generated from F:/project/java/FXBD/src/main/java/com/xx/Expr/lexer/Expr.g4 by ANTLR 4.13.2
 package com.xx.antlr.Expr.parser;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;

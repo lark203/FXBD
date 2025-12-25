@@ -1,4 +1,4 @@
-// Generated from F:/project/java/FXEditor/src/main/java/com/xx/Rows/lexer/Rows.g4 by ANTLR 4.13.2
+// Generated from F:/project/java/FXBD/src/main/java/com/xx/Rows/lexer/Rows.g4 by ANTLR 4.13.2
 package com.xx.antlr.Rows.parser;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
