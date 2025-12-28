@@ -3,11 +3,13 @@ package com.xx.UI.basic;
 import com.xx.UI.util.BDMapping;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
 import javafx.css.StyleableObjectProperty;
 import javafx.css.StyleableProperty;
 import javafx.css.converter.PaintConverter;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
@@ -22,6 +24,14 @@ import java.util.List;
 public class BDButton extends Button {
     private static final String CSS_CLASS_NAME = "bd-button";
     private final BDMapping mapping = new BDMapping();
+//    默认图标
+    private final ObjectProperty<Node> defaultGraphic = new SimpleObjectProperty<>();
+//    按下图标
+    private final ObjectProperty<Node> pressGraphic = new SimpleObjectProperty<>();
+//    选中图标
+    private final ObjectProperty<Node> selectedGraphic = new SimpleObjectProperty<>();
+//    选中按下图标
+    private final ObjectProperty<Node> selectedPressGraphic = new SimpleObjectProperty<>();
 //    选中状态
     private final SimpleBooleanProperty selected = new SimpleBooleanProperty(false);
 //    是否可以被选中
@@ -259,6 +269,45 @@ public class BDButton extends Button {
         return selectedPressedFill;
     }
 
+    public Node getDefaultGraphic() {
+        return defaultGraphic.get();
+    }
+    public ObjectProperty<Node> defaultGraphicProperty() {
+        return defaultGraphic;
+    }
+    public void setDefaultGraphic(Node defaultGraphic) {
+        defaultGraphicProperty().set(defaultGraphic);
+    }
+
+    public Node getPressGraphic() {
+        return pressGraphic.get();
+    }
+
+    public ObjectProperty<Node> pressGraphicProperty() {
+        return pressGraphic;
+    }
+    public void setPressGraphic(Node pressGraphic) {
+        pressGraphicProperty().set(pressGraphic);
+    }
+
+    public Node getSelectedGraphic() {
+        return selectedGraphic.get();
+    }
+
+    public ObjectProperty<Node> selectedGraphicProperty() {
+        return selectedGraphic;
+    }
+
+    public Node getSelectedPressGraphic() {
+        return selectedPressGraphic.get();
+    }
+    public void setSelectedGraphic(Node selectedGraphic) {
+        selectedGraphicProperty().set(selectedGraphic);
+    }
+
+    public ObjectProperty<Node> selectedPressGraphicProperty() {
+        return selectedPressGraphic;
+    }
 
     @Override
     protected Skin<?> createDefaultSkin() {

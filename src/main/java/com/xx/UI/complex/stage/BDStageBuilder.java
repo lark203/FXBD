@@ -1,5 +1,7 @@
 package com.xx.UI.complex.stage;
 
+import com.xx.UI.util.Util;
+import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.HeaderBar;
@@ -10,21 +12,27 @@ import javafx.stage.StageStyle;
 
 public class BDStageBuilder {
     private final VBox root = new VBox();
-    private final Scene scene = new Scene(root);
     private final Stage stage = new Stage();
-    {
+
+    public BDStageBuilder(HeaderBar headerBar) {
         stage.initStyle(StageStyle.EXTENDED);
+        Scene scene = new Scene(root);
         stage.setScene(scene);
-    }
-    public BDStageBuilder buildHeaderBar(HeaderBar headerBar){
         root.getChildren().add(0, headerBar);
-        return this;
+        HeaderBar.setPrefButtonHeight(stage, 0);
     }
-    public BDStageBuilder buildContent(Node content){
+
+    public BDStageBuilder buildContent(Node content) {
         VBox.setVgrow(content, Priority.ALWAYS);
         root.getChildren().add(content);
         return this;
     }
+
+    public BDStageBuilder buildStyle(String path) {
+        Application.setUserAgentStylesheet(Util.getResourceUrl(path));
+        return this;
+    }
+
     public Stage build() {
         return stage;
     }

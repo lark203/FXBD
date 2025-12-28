@@ -94,20 +94,30 @@ public class util {
     }
 
     private static String convertToConstantCase(String input) {
-        // 处理特殊字符和命名规范
-        return input
-                // 替换所有非字母数字字符为下划线
-                .replaceAll("[^a-zA-Z0-9]", "_")
-                // 处理连续下划线
-                .replaceAll("_+", "_")
-                // 处理开头和结尾的下划线
-                .replaceAll("^_|_$", "")
-                // 转换为大写
-                .toUpperCase()
-                // 处理特殊命名情况
-                .replace("20X20", "_20X20")
-                .replace("14X14", "_14X14")
-                .replace("@", "_")
-                .replace(".", "_");
+        // 1. 替换非字母数字字符为下划线
+        String s = input.replaceAll("[^a-zA-Z0-9]", "_");
+
+        // 2. 处理驼峰命名边界
+        // a) 小写字母后跟大写字母: myVariable -> my_Variable
+        s = s.replaceAll("(?<=[a-z])(?=[A-Z])", "_");
+        // b) 大写字母序列后跟小写字母: HTTPRequest -> HTTP_Request
+        s = s.replaceAll("(?<=[A-Z])(?=[A-Z][a-z])", "_");
+
+        // 3. 合并连续下划线并清理首尾
+        s = s.replaceAll("_+", "_");
+        s = s.replaceAll("^_|_$", "");
+
+        // 4. 转换为大写
+        s = s.toUpperCase();
+
+        // 5. 特殊尺寸标识处理
+        s = s.replace("20X20", "_20X20");
+        s = s.replace("14X14", "_14X14");
+
+        // 6. 再次清理可能产生的连续下划线
+        s = s.replaceAll("_+", "_");
+        s = s.replaceAll("^_|_$", "");
+
+        return s;
     }
 }

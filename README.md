@@ -61,3 +61,12 @@ mapping.dispose();
 
 
 体验请参考demo目录下相应的demo文件。
+
+## 注意
+使用时请添加虚拟机参数：
+```
+-XX:+UseZGC
+-Djavafx.enablePreview=true
+--enable-native-access=javafx.graphics
+-Djavafx.suppressPreviewWarning=true
+```

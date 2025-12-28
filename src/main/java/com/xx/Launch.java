@@ -61,7 +61,8 @@ public class Launch extends Application {
         headerBar.setTrailing(systemButtons);
 
         Scene scene = new Scene(new VBox(headerBar, initTextArea(Util.getPath("src/main/java/com/xx/Launch.java"))), 800, 600);
-        stage.setScene(scene);HeaderBar.setPrefButtonHeight(stage, 0);
+        stage.setScene(scene);
+        HeaderBar.setPrefButtonHeight(stage, 0);
         stage.setTitle("HeaderBar 示例");
         stage.show();
 

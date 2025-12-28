@@ -116,7 +116,7 @@ public class BDTabSkin extends BDSkin<BDTab> {
         closeButton.getStyleClass().add("bd-tab-close-button");
         closeButton.getStyleClass().add("circle");
         closeButton.setPadding(new Insets(0, 0, 0, 0));
-        closeButton.setGraphic(Util.getImageView(20, BDIcon.CLOSE_SMALL));
+        closeButton.setDefaultGraphic(Util.getImageView(20, BDIcon.CLOSE_SMALL));
     }
 
 }

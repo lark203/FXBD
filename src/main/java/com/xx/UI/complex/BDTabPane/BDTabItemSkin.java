@@ -378,7 +378,7 @@ public class BDTabItemSkin extends BDSkin<BDTabItem> {
 
         header.getChildren().addAll(leftBox, tabContent, rightBox);
         foldButton.setTooltip(new Tooltip("显示隐藏的标签页"));
-        foldButton.setGraphic(Util.getImageView(15, BDIcon.FOLD));
+        foldButton.setDefaultGraphic(Util.getImageView(15, BDIcon.FOLD));
         foldButton.setSelectable(false);
         rightBox.getChildren().setAll(foldButton);
 

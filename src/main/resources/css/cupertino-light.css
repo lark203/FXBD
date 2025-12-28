@@ -126,6 +126,12 @@
     -color-bd-textarea-color9: #00627A;
     -color-bd-textarea-color10: #ff0000;
     -color-bd-textarea-color11: #EDEBFC;
+
+    -color-bd-base1: #27282E;
+    -color-bd-base2: #FFFFFF;
+    -color-bd-danger1: #C42B1C;
+    -color-bd-danger2: #B32B1D;
+
 }
 
 .root.popup {
@@ -5724,6 +5730,7 @@ BDSearchBox .content .right-pane {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
+
 /*************************** bdTabItem ********************************************/
 .bd-tab-item-content-pane {
     -fx-border-color: #EBECF0;
@@ -5743,10 +5750,12 @@ BDSearchBox .content .right-pane {
 .bd-tab-item-rectangle:focused {
     -fx-fill: #3574F0;
 }
-.bd-tab-item-tabs-back{
+
+.bd-tab-item-tabs-back {
     -fx-fill: #D8E5F5FF;
 }
-.bd-tab-item-root-rec{
+
+.bd-tab-item-root-rec {
     -fx-fill: rgba(216, 229, 245, 0.5);
 }
 
@@ -5760,6 +5769,7 @@ BDSearchBox .content .right-pane {
     -fx-opacity: 0;
     transition: -fx-opacity 0.3s ease;
 }
+
 .bd-tab-item-right {
     -fx-padding: 0 5 0 5;
     -fx-alignment: center;
@@ -5788,10 +5798,12 @@ BDSearchBox .content .right-pane {
 .bd-tab {
     -fx-opacity: 0.7;
 }
+
 .bd-tab:hover {
     -fx-opacity: 1;
 }
-.bd-tab-title{
+
+.bd-tab-title {
     -fx-font-family: "JetBrains Mono SemiBold";
 }
 
@@ -5818,30 +5830,69 @@ BDSearchBox .content .right-pane {
     -fx-border-color: #D0D0D0; /* 浅灰色边框 */
     -fx-cursor: hand;
 }
-.bd-tab-popup .separator:horizontal  {
+
+.bd-tab-popup .separator:horizontal {
     -fx-border-color: #E0E0E0; /* 更浅的分隔线 */
     -fx-pref-height: 1px;
     -fx-min-height: 1px;
     -fx-max-height: 1px;
 }
+
 .bd-tab-clone {
     -fx-spacing: 5px;
     -fx-alignment: center-left;
     -fx-opacity: 0.8;
     -fx-background-radius: 5px;
 }
+
 .bd-tab-clone:hover {
     -fx-background-color: #D4E2FF; /* 鼠标悬停背景色 */
     -fx-opacity: 1;
     transition: -fx-opacity 0.3s ease;
 }
-.bd-tab-clone-rectangle{
-    -fx-fill:transparent;
+
+.bd-tab-clone-rectangle {
+    -fx-fill: transparent;
     -fx-arc-height: 5;
     -fx-arc-width: 5;
     -fx-height: 10px;
     -fx-width: 10px;
 }
-.bd-tab-clone-rectangle:show{
+
+.bd-tab-clone-rectangle:show {
     -fx-fill: #3574F0;
+}
+
+/*************************** BDHeaderBar ********************************************/
+.bd-header-bar {
+    -fx-background-color: -color-bd-base1;
+}
+.bd-header-bar-title {
+    -fx-font-size: 18px;
+    -fx-font-family: "JetBrains Mono SemiBold";
+    -fx-fill: -color-bd-base2;
+}
+
+.bd-header-bar-center {
+    -fx-alignment: center;
+}
+
+.bd-header-bar-trailing {
+    -fx-alignment: center-right;
+}
+
+.bd-header-bar-leading {
+    -fx-alignment: center-left;
+}
+
+.bd-stage-tool-button {
+    -bd-default-fill: transparent;
+    -bd-hover-fill: rgba(255, 255, 255, 0.2);
+    -bd-pressed-fill: rgba(255, 255, 255, 0.1);
+    -fx-padding: 20px;
+}
+
+.bd-stage-close-button {
+    -bd-hover-fill: -color-bd-danger1;
+    -bd-pressed-fill: -color-bd-danger2;
 }
