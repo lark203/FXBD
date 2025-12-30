@@ -20,8 +20,13 @@ import javafx.scene.text.Text;
 public class BDHeaderBarBuilder {
     private final HeaderBar headerBar = new HeaderBar();
     private final HBox leadingBox = new HBox();
-    private final HBox centerBox = new HBox();
+    final HBox centerBox = new HBox();
     private final HBox trailingBox = new HBox();
+    Text title;
+    ImageView icon;
+    BDButton maximizeButton;
+    BDButton minimizeButton;
+    BDButton closeButton;
 
     public BDHeaderBarBuilder() {
         initializeHeaderBar();
@@ -50,6 +55,7 @@ public class BDHeaderBarBuilder {
 
     /**
      * 向左侧区域添加节点
+     *
      * @param node 要添加的节点
      * @return 当前构建器实例，支持链式调用
      */
@@ -60,16 +66,20 @@ public class BDHeaderBarBuilder {
 
     /**
      * 添加图标到左侧区域
+     *
      * @param imageView 图标ImageView
      * @return 当前构建器实例，支持链式调用
      */
     public BDHeaderBarBuilder addIcon(ImageView imageView) {
-        HBox.setMargin(imageView, new Insets(0, 0, 0, 10));
-        return addLeading(imageView);
+        imageView.getStyleClass().add("bd-header-bar-icon");
+        this.icon = imageView;
+        HBox.setMargin(this.icon, new Insets(0, 0, 0, 10));
+        return this;
     }
 
     /**
      * 向中间区域添加节点
+     *
      * @param node 要添加的节点
      * @return 当前构建器实例，支持链式调用
      */
@@ -79,29 +89,21 @@ public class BDHeaderBarBuilder {
     }
 
     /**
-     * 在中间区域添加标题
-     * @param title 标题文本
-     * @return 当前构建器实例，支持链式调用
-     */
-    public BDHeaderBarBuilder addTitleInCenter(String title) {
-        Text node = new Text(title);
-        node.getStyleClass().add("bd-header-bar-title");
-        return addCenter(node);
-    }
-
-    /**
      * 在左侧区域添加标题
+     *
      * @param title 标题文本
      * @return 当前构建器实例，支持链式调用
      */
-    public BDHeaderBarBuilder addTitleInLeft(String title) {
-        Text node = new Text(title);
-        node.getStyleClass().add("bd-header-bar-title");
-        return addLeading(node);
+    public BDHeaderBarBuilder addTitle(String title) {
+        this.title = new Text(title);
+        this.title.setText(title);
+        this.title.getStyleClass().add("bd-header-bar-title");
+        return this;
     }
 
     /**
      * 向右侧区域添加节点
+     *
      * @param node 要添加的节点
      * @return 当前构建器实例，支持链式调用
      */
@@ -112,51 +114,55 @@ public class BDHeaderBarBuilder {
 
     /**
      * 添加最大化按钮
+     *
      * @return 当前构建器实例，支持链式调用
      */
     public BDHeaderBarBuilder addMaximizeButton() {
-        BDButton button = createToolButton(
-            "bd-stage-maximize-button",
-            BDIcon.MAXIMIZE_DARK,
-            BDIcon.MAXIMIZE_INACTIVE_DARK
+        this.maximizeButton = createToolButton(
+                "bd-stage-maximize-button",
+                BDIcon.MAXIMIZE_DARK,
+                BDIcon.MAXIMIZE_INACTIVE_DARK
         );
-        HeaderBar.setButtonType(button, HeaderButtonType.MAXIMIZE);
-        return addTrailing(button);
+        HeaderBar.setButtonType(maximizeButton, HeaderButtonType.MAXIMIZE);
+        return this;
     }
 
     /**
      * 添加最小化按钮
+     *
      * @return 当前构建器实例，支持链式调用
      */
     public BDHeaderBarBuilder addMinimizeButton() {
-        BDButton button = createToolButton(
-            "bd-stage-minimize-button",
-            BDIcon.MINIMIZE_DARK,
-            BDIcon.MINIMIZE_INACTIVE_DARK
+        this.minimizeButton = createToolButton(
+                "bd-stage-minimize-button",
+                BDIcon.MINIMIZE_DARK,
+                BDIcon.MINIMIZE_INACTIVE_DARK
         );
-        HeaderBar.setButtonType(button, HeaderButtonType.ICONIFY);
-        return addTrailing(button);
+        HeaderBar.setButtonType(minimizeButton, HeaderButtonType.ICONIFY);
+        return this;
     }
 
     /**
      * 添加关闭按钮
+     *
      * @return 当前构建器实例，支持链式调用
      */
     public BDHeaderBarBuilder addCloseButton() {
-        BDButton button = createToolButton(
-            "bd-stage-close-button",
-            BDIcon.CLOSE_DARK,
-            BDIcon.CLOSE_INACTIVE_DARK
+        this.closeButton = createToolButton(
+                "bd-stage-close-button",
+                BDIcon.CLOSE_DARK,
+                BDIcon.CLOSE_INACTIVE_DARK
         );
-        HeaderBar.setButtonType(button, HeaderButtonType.CLOSE);
-        return addTrailing(button);
+        HeaderBar.setButtonType(closeButton, HeaderButtonType.CLOSE);
+        return this;
     }
 
     /**
      * 创建工具按钮的通用方法
-     * @param styleClass 样式类名
+     *
+     * @param styleClass  样式类名
      * @param defaultIcon 默认图标
-     * @param pressIcon 按下时的图标
+     * @param pressIcon   按下时的图标
      * @return 配置好的按钮
      */
     private BDButton createToolButton(String styleClass, BDIcon defaultIcon, BDIcon pressIcon) {
@@ -170,9 +176,12 @@ public class BDHeaderBarBuilder {
 
     /**
      * 构建并返回标题栏
+     *
      * @return 配置好的HeaderBar实例
      */
-    public HeaderBar build() {
+    HeaderBar build() {
+        leadingBox.getChildren().addAll(icon,title);
+        trailingBox.getChildren().addAll(minimizeButton,maximizeButton,closeButton);
         return headerBar;
     }
 }

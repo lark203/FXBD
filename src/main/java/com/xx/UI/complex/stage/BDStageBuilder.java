@@ -1,12 +1,18 @@
 package com.xx.UI.complex.stage;
 
+import com.xx.UI.basic.BDButton;
+import com.xx.UI.ui.BDIcon;
+import com.xx.UI.util.BDMapping;
 import com.xx.UI.util.Util;
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HeaderBar;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -15,35 +21,50 @@ import javafx.stage.StageStyle;
  * 用于构建具有自定义标题栏的JavaFX窗口
  */
 public class BDStageBuilder {
+    private final BDMapping mapping = new BDMapping();
     private final VBox root = new VBox();
     private final Stage stage = new Stage();
 
     /**
      * 构造函数，初始化Stage和Scene
-     * @param headerBar 标题栏组件
      */
-    public BDStageBuilder(HeaderBar headerBar) {
-        initializeStage(headerBar);
+    public BDStageBuilder() {
+
     }
 
     /**
      * 初始化Stage和Scene
-     * @param headerBar 标题栏组件
+     *
+     * @param headerBarBuilder 标题栏构建器
      */
-    private void initializeStage(HeaderBar headerBar) {
+    public BDStageBuilder setHeaderBar(BDHeaderBarBuilder headerBarBuilder) {
         stage.initStyle(StageStyle.EXTENDED);
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        root.getChildren().addFirst(headerBar);
+        root.getChildren().addFirst(headerBarBuilder.build());
         HeaderBar.setPrefButtonHeight(stage, 0);
+        if (headerBarBuilder.title instanceof Text title)
+            mapping.bindBidirectional( stage.titleProperty(),title.textProperty());
+        if (headerBarBuilder.maximizeButton instanceof BDButton maximizeButton)
+            mapping.addListener(() -> {
+                if (stage.isMaximized()) {
+                    maximizeButton.setDefaultGraphic(Util.getImageView(15, BDIcon.RESTORE_DARK));
+                    maximizeButton.setPressGraphic(Util.getImageView(15, BDIcon.RESTORE_INACTIVE_DARK));
+                } else {
+                    maximizeButton.setDefaultGraphic(Util.getImageView(15, BDIcon.MAXIMIZE_DARK));
+                    maximizeButton.setPressGraphic(Util.getImageView(15, BDIcon.MAXIMIZE_INACTIVE_DARK));
+                }
+            }, true, stage.maximizedProperty());
+        return this;
     }
 
     /**
      * 设置窗口内容
+     *
      * @param content 内容节点
      * @return 当前构建器实例，支持链式调用
      */
-    public BDStageBuilder buildContent(Node content) {
+    public BDStageBuilder setContent(Node content) {
         VBox.setVgrow(content, Priority.ALWAYS);
         root.getChildren().add(content);
         return this;
@@ -51,19 +72,25 @@ public class BDStageBuilder {
 
     /**
      * 设置窗口样式
+     *
      * @param path 样式文件路径
      * @return 当前构建器实例，支持链式调用
      */
-    public BDStageBuilder buildStyle(String path) {
-        Application.setUserAgentStylesheet(Util.getResourceUrl(path));
+    public BDStageBuilder setStyle(String path) {
+        Application.setUserAgentStylesheet(path);
         return this;
     }
 
     /**
      * 构建并返回Stage
+     *
      * @return 配置好的Stage实例
      */
     public Stage build() {
         return stage;
+    }
+
+    public BDMapping getMapping() {
+        return mapping;
     }
 }

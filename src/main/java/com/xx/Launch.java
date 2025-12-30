@@ -67,9 +67,6 @@ public class Launch extends Application {
         stage.show();
 
         Application.setUserAgentStylesheet(Util.getResourceUrl("/css/cupertino-light.css"));
-
-        new StageTesterWindow(stage).show();
-
     }
 
     public BDTab initTab(Path path) {

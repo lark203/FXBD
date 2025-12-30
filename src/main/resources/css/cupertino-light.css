@@ -5889,6 +5889,7 @@ BDSearchBox .content .right-pane {
     -bd-default-fill: transparent;
     -bd-hover-fill: rgba(255, 255, 255, 0.2);
     -bd-pressed-fill: rgba(255, 255, 255, 0.1);
+    -fx-background-radius: 0;
     -fx-padding: 20px;
 }
 

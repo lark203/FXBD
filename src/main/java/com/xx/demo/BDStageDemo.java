@@ -21,9 +21,10 @@ public class BDStageDemo extends Application {
         BDHeaderBarBuilder headerBarBuilder = createHeaderBarBuilder();
 
         // 构建主窗口
-        BDStageBuilder stageBuilder = new BDStageBuilder(headerBarBuilder.build())
-                .buildContent(new BDTextAreaSearch(new BDTextArea()))
-                .buildStyle("/css/cupertino-light.css");
+        BDStageBuilder stageBuilder = new BDStageBuilder()
+                .setContent(new BDTextAreaSearch(new BDTextArea()))
+                .setStyle(Util.getResourceUrl("/css/cupertino-light.css"))
+                .setHeaderBar(headerBarBuilder);
 
         // 显示窗口
         stageBuilder.build().show();
@@ -35,8 +36,8 @@ public class BDStageDemo extends Application {
      */
     private BDHeaderBarBuilder createHeaderBarBuilder() {
         return new BDHeaderBarBuilder()
-                .addTitleInLeft("BDStageDemo")
                 .addIcon(Util.getImageView(25, BDIcon.IDEA_MODULE))
+                .addTitle("BDStageDemo")
                 .addMinimizeButton()
                 .addMaximizeButton()
                 .addCloseButton();
