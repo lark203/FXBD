@@ -51,6 +51,7 @@ public class BDHeaderBarBuilder {
         HeaderBar.setAlignment(trailingBox, Pos.CENTER_RIGHT);
 
         HeaderBar.setDragType(centerBox, HeaderDragType.DRAGGABLE);
+        HeaderBar.setDragType(leadingBox, HeaderDragType.DRAGGABLE_SUBTREE);
     }
 
     /**
@@ -73,7 +74,6 @@ public class BDHeaderBarBuilder {
     public BDHeaderBarBuilder addIcon(ImageView imageView) {
         imageView.getStyleClass().add("bd-header-bar-icon");
         this.icon = imageView;
-        HBox.setMargin(this.icon, new Insets(0, 0, 0, 10));
         return this;
     }
 
@@ -180,8 +180,13 @@ public class BDHeaderBarBuilder {
      * @return 配置好的HeaderBar实例
      */
     HeaderBar build() {
-        leadingBox.getChildren().addAll(icon,title);
-        trailingBox.getChildren().addAll(minimizeButton,maximizeButton,closeButton);
+        HBox iconTitle = new HBox(icon, title);
+        iconTitle.getStyleClass().add("bd-header-bar-icon-title");
+        leadingBox.getChildren().add(iconTitle);
+
+        HBox buttonBox = new HBox(minimizeButton,maximizeButton,closeButton);
+        buttonBox.getStyleClass().add("bd-header-bar-button-box");
+        trailingBox.getChildren().add(buttonBox);
         return headerBar;
     }
 }

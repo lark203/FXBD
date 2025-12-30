@@ -5872,12 +5872,18 @@ BDSearchBox .content .right-pane {
     -fx-font-family: "JetBrains Mono SemiBold";
     -fx-fill: -color-bd-base2;
 }
-
+.bd-header-bar-icon-title {
+    -fx-padding: 0 0 0 20px;
+    -fx-alignment: center-left;
+    -fx-spacing: 10px;
+}
 .bd-header-bar-center {
     -fx-alignment: center;
 }
-
 .bd-header-bar-trailing {
+    -fx-alignment: center-right;
+}
+.bd-header-bar-button-box {
     -fx-alignment: center-right;
 }
 
