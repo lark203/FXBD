@@ -46,13 +46,15 @@ public class BDTabSkin extends BDSkin<BDTab> {
                             if (tab != control) tab.close();
                         });
                     } else control.close();
-                }).addEventFilter(control, MouseDragEvent.DRAG_DETECTED, event -> {
+                })
+                .addEventFilter(control, MouseDragEvent.DRAG_DETECTED, event -> {
                     dragTab = control;
                     control.startDragAndDrop(TransferMode.MOVE);
                     control.startFullDrag();
                     tempItem = control.splitItem.get();
                     control.handleDragDetected(event);
-                }).addEventFilter(control, DragEvent.DRAG_DONE, event -> {
+                })
+                .addEventFilter(control, DragEvent.DRAG_DONE, _ -> {
                     if (tempItem != null)
                         tempItem.check();
                     if (dragTab.splitItem.get() == null) {

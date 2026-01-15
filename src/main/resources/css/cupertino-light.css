@@ -129,9 +129,11 @@
 
     -color-bd-base1: #27282E;
     -color-bd-base2: #FFFFFF;
-    -color-bd-base3: #F7F8FA;
+    -color-bd-base3: #D1D1D6;
+    -color-bd-accent1:#D4E2FF;
     -color-bd-danger1: #C42B1C;
     -color-bd-danger2: #B32B1D;
+
 
 }
 
@@ -5863,6 +5865,7 @@ BDSearchBox .content .right-pane {
 .bd-tab-clone-rectangle:show {
     -fx-fill: #3574F0;
 }
+
 /*
         BD Stage 样式
 */
@@ -5870,22 +5873,27 @@ BDSearchBox .content .right-pane {
 .bd-header-bar {
     -fx-background-color: -color-bd-base1;
 }
+
 .bd-header-bar-title {
     -fx-font-size: 18px;
     -fx-font-family: "JetBrains Mono SemiBold";
     -fx-fill: -color-bd-base2;
 }
+
 .bd-header-bar-icon-title {
     -fx-padding: 0 0 0 20px;
     -fx-alignment: center-left;
     -fx-spacing: 10px;
 }
+
 .bd-header-bar-center {
     -fx-alignment: center;
 }
+
 .bd-header-bar-trailing {
     -fx-alignment: center-right;
 }
+
 .bd-header-bar-button-box {
     -fx-alignment: center-right;
 }
@@ -5906,14 +5914,63 @@ BDSearchBox .content .right-pane {
     -bd-hover-fill: -color-bd-danger1;
     -bd-pressed-fill: -color-bd-danger2;
 }
+
 /*************************** BDContent ********************************************/
-.bd-side-bar-pane {
-    -fx-spacing: 10px;
-    -fx-alignment: center;
-    -fx-padding: 5px;
-    -fx-border-width: 2;
-    -fx-border-color: -color-bd-base3;
+/*content*/
+.bd-content-pane {
+    -fx-border-width: none;
+    -fx-padding: 0;
 }
+
+.bd-content-pane .bd-split-back{
+    -fx-fill: rgba(216, 229, 245, 0.5);
+}
+/*BDSideBar*/
+.bd-side-bar-pane {
+    -fx-spacing: 5px;
+    -fx-alignment: center;
+    -fx-padding: 5px 0 5px 0;
+    -fx-border-color: -color-bd-base3;
+    -fx-border-width: 0;
+
+    -item-back-fill: -color-bd-accent1;
+}
+
+.bd-side-bar-pane.top {
+    -fx-border-width: 0 0 0.5px 0;
+}
+
+.bd-side-bar-pane.right {
+    -fx-border-width: 0 0 0 0.5px;
+}
+
+.bd-side-bar-pane.bottom {
+    -fx-border-width: 0.5px 0 0 0;
+}
+
+.bd-side-bar-pane.left {
+    -fx-border-width: 0 0.5px 0 0;
+}
+
+.bd-side-bar-pane .front-pane {
+    -fx-spacing: 5px;
+    -fx-alignment: center;
+    -fx-padding: 5px 0 5px 0;
+    -fx-border-width: 0;
+
+}
+
+.bd-side-bar-pane .after-pane {
+    -fx-spacing: 5px;
+    -fx-alignment: center;
+    -fx-padding: 5px 0 5px 0;
+    -fx-border-width: 0;
+}
+
+.bd-side-bar-pane .bd-side-bar-separator {
+    -fx-padding: 0 10px 0 10px;
+}
+
 .bd-side-bar-pane.vertical {
     -fx-pref-width: 50px;
 }
@@ -5921,9 +5978,23 @@ BDSearchBox .content .right-pane {
 .bd-side-bar-pane.horizontal {
     -fx-pref-height: 50px;
 }
+
 .bd-side-bar-item {
     -fx-content-display: graphic-only;
     -fx-background-radius: 50;
     -fx-padding: 5px;
     -fx-effect: none;
 }
+
+.bd-side-bar-pane .item-back {
+    -fx-fill: -item-back-fill;
+    -fx-arc-height: 10;
+    -fx-arc-width: 10;
+}
+
+.bd-side-bar-pane .placeholder{
+    -fx-fill: transparent;
+    -fx-pref-height: 30;
+}
+
+

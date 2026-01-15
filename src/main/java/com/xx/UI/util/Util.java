@@ -79,6 +79,7 @@ public class Util {
 
     public static Node getSpring() {
         Node hBoxSpring = getHBoxSpring();
+        hBoxSpring.setUserData("FXBD_SPRING");
         VBox.setVgrow(hBoxSpring, Priority.ALWAYS);
         return hBoxSpring;
     }

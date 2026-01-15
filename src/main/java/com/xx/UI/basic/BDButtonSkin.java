@@ -40,7 +40,6 @@ public class BDButtonSkin extends ButtonSkin implements BDUI {
     @Override
     public void initProperty() {
         Background background = control.getBackground();
-        
         // 背景绑定逻辑
         mapping.binding(control.backgroundProperty(),
                         Bindings.createObjectBinding(() -> {

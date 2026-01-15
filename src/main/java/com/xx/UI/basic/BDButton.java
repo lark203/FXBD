@@ -2,6 +2,7 @@ package com.xx.UI.basic;
 
 import com.xx.UI.util.BDMapping;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.css.CssMetaData;
@@ -53,6 +54,17 @@ public class BDButton extends Button {
         getStyleClass().add(CSS_CLASS_NAME);
     }
 
+    public BDButton(String text) {
+        super(text);
+        getStyleClass().add(CSS_CLASS_NAME);
+    }
+
+    public BDButton(String text, Node graphic) {
+        super(text, graphic);
+        getStyleClass().add(CSS_CLASS_NAME);
+    }
+    
+
     public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData() {
         return BDButton.StyleableProperties.STYLEABLES;
     }
@@ -74,7 +86,7 @@ public class BDButton extends Button {
         this.selected.set(selected);
     }
 
-    public SimpleBooleanProperty selectedProperty() {
+    public ReadOnlyBooleanProperty selectedProperty() {
         return selected;
     }
 

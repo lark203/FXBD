@@ -2,7 +2,9 @@ package com.xx.UI.complex.stage;
 
 import com.xx.UI.basic.BDButton;
 import com.xx.UI.basic.BDButtonSkin;
-import javafx.event.ActionEvent;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseDragEvent;
+import javafx.scene.input.TransferMode;
 
 public class BDSideBarItemSkin extends BDButtonSkin {
 
@@ -13,17 +15,27 @@ public class BDSideBarItemSkin extends BDButtonSkin {
     @Override
     public void initEvent() {
         super.initEvent();
+        mapping.addEventFilter(control, MouseDragEvent.DRAG_DETECTED, event -> {
+                    BDContent.DRAG_ITEM = (BDSideBarItem) control;
+                    control.startDragAndDrop(TransferMode.MOVE);
+                    control.startFullDrag();
+                    ((BDSideBarItem) control).handleDragDetected(event);
+                })
+                .addEventFilter(control, DragEvent.DRAG_DONE, event -> {
+                    ((BDSideBarItem) control).dragEnd();
+                    BDContent.DRAG_ITEM = null;
+                });
     }
 
     @Override
     public void initProperty() {
         super.initProperty();
-        mapping.addListener(()->{
-             if (control.isSelected() && control instanceof BDSideBarItem item && item.sidebar.get() != null)
+        mapping.addListener(() -> {
+            if (control.isSelected() && control instanceof BDSideBarItem item && item.sidebar.get() != null)
                 item.sidebar.get().showSideBarItem(item);
-             else if (!control.isSelected() && control instanceof BDSideBarItem item && item.sidebar.get() != null)
+            else if (!control.isSelected() && control instanceof BDSideBarItem item && item.sidebar.get() != null)
                 item.sidebar.get().closeSideBarItem(item);
-        },true,control.selectedProperty());
+        }, true, control.selectedProperty());
     }
 
     @Override

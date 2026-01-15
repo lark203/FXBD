@@ -146,19 +146,22 @@ public class BDTabItemSkin extends BDSkin<BDTabItem> {
                     newValue = Math.max(bar.getMin(), Math.min(bar.getMax(), newValue));
                     animateScroll(newValue);
                     event1.consume();
-                }).addEventFilter(control, KeyEvent.KEY_PRESSED, event -> {
+                })
+                .addEventFilter(control, KeyEvent.KEY_PRESSED, event -> {
                     if (close.match(event) && control.getShowTab() instanceof BDTab tab)
                         tab.close();
-                }).addEventFilter(tabBox, DragEvent.DRAG_ENTERED, event -> {
+                })
+                .addEventFilter(tabBox, DragEvent.DRAG_ENTERED, event -> {
                     if (dragTab == null || !control.acceptDrag(dragTab) || control.getTabs().isEmpty()) return;
                     event.consume();
                     tabsBack.setHeight(dragTab.getHeight());
                     tabsBack.setWidth(dragTab.getWidth());
-                }).addEventFilter(tabBox, DragEvent.DRAG_OVER, event -> {
+                })
+                .addEventFilter(tabBox, DragEvent.DRAG_OVER, event -> {
                     if (dragTab == null || !control.acceptDrag(dragTab) || control.getTabs().isEmpty()) return;
                     event.consume();
-                    BDTab tab = Util.searchEventTargetNode(event.getTarget(), BDTab.class);
                     event.acceptTransferModes(TransferMode.MOVE);
+                    BDTab tab = Util.searchEventTargetNode(event.getTarget(), BDTab.class);
                     if (tab != null) {
                         Bounds bounds = tab.localToScene(tab.getLayoutBounds());
                         tabBox.getChildren().remove(tabsBack);
@@ -216,7 +219,8 @@ public class BDTabItemSkin extends BDSkin<BDTabItem> {
                     }
                     dragTab.show();
                     animationRootRec(null, event);
-                }).addEventFilter(rootPane, DragEvent.DRAG_ENTERED, event -> {
+                })
+                .addEventFilter(rootPane, DragEvent.DRAG_ENTERED, event -> {
                     if (dragTab == null || !control.acceptDrag(dragTab) || !control.getTabs().isEmpty()) return;
                     event.consume();
                     event.acceptTransferModes(TransferMode.MOVE);
@@ -226,7 +230,8 @@ public class BDTabItemSkin extends BDSkin<BDTabItem> {
                     rootRec.setLayoutX(left);
                     rootRec.setLayoutY(top);
                     animationRootRec(rootPane.getWidth(), rootPane.getHeight(), 0, 0);
-                }).addEventFilter(rootPane, DragEvent.DRAG_OVER, event -> {
+                })
+                .addEventFilter(rootPane, DragEvent.DRAG_OVER, event -> {
                     if (dragTab == null || !control.acceptDrag(dragTab) || !control.getTabs().isEmpty()) return;
                     event.consume();
                     event.acceptTransferModes(TransferMode.MOVE);

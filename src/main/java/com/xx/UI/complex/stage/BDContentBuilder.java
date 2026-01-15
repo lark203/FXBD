@@ -4,9 +4,11 @@ import javafx.scene.Node;
 import javafx.scene.layout.Background;
 import javafx.scene.paint.Color;
 
+import java.util.Arrays;
+
 public class BDContentBuilder {
     private final BDContent bdContent = new BDContent();
-    public BDContentBuilder addSideNode(BDDirection directory, BDInSequence inSequence, Node... nodes){
+    void addNode(BDDirection directory, BDInSequence inSequence, Node... nodes){
         switch (directory) {
             case TOP:
                 for (Node node : nodes){
@@ -32,6 +34,22 @@ public class BDContentBuilder {
                 break;
                 case null, default:
                 break;
+        }
+    }
+    public BDContentBuilder addSideNode(BDDirection directory, BDInSequence inSequence,Node... node){
+        if (node.length != 0){
+            BDSideBarItem[] items = Arrays.stream(node).filter(n -> n instanceof BDSideBarItem).map(n -> (BDSideBarItem) n).toArray(BDSideBarItem[]::new);
+            Node[] nodes = Arrays.stream(node).filter(n -> !(n instanceof BDSideBarItem)).toArray(Node[]::new);
+            addSideNode(items);
+            addNode(directory,inSequence,nodes);
+        }
+        return this;
+    }
+    public BDContentBuilder addSideNode(BDSideBarItem... items){
+        for (BDSideBarItem item : items) {
+            if (item.getDirection().equals(BDDirection.LEFT) || item.getDirection().equals(BDDirection.RIGHT)) addNode(item.getDirection(),item.getInSequence(),item);
+            else if (item.getInSequence().equals(BDInSequence.FRONT)) bdContent.leftSideBar.get().addAfterSideNode(item);
+            else bdContent.rightSideBar.get().addAfterSideNode(item);
         }
         return this;
     }

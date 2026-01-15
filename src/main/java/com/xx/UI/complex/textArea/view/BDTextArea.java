@@ -97,6 +97,10 @@ public class BDTextArea extends BDControl {
         getStyleClass().setAll(CSS_CLASS_NAME);
         init();
     }
+    public BDTextArea(String text){
+        this ();
+        appendText(text);
+    }
 
     //    根据传入的dataBlocks和point、dir，返回该point在位移后的值。
     static BDTextAreaContent.Point caretMove(List<DataBlock<?, ?>> dataBlocks, BDTextAreaContent.Point point, MARK_DIRECTION dir) {

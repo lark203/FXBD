@@ -29,6 +29,12 @@ public class BDSideContent extends BDControl {
     public ObjectProperty<Node> contentProperty() {
         return content;
     }
+    public void setContent(Node content) {
+        this.content.set(content);
+    }
+    public Node getContent() {
+        return content.get();
+    }
     public StringProperty titleProperty() {
         return title;
     }
