@@ -2,15 +2,15 @@ package com.xx.UI.complex.stage;
 
 import com.xx.UI.ui.BDSkin;
 import com.xx.UI.util.Util;
+import javafx.application.Application;
 import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 
 import static com.xx.UI.complex.stage.BDContent.DRAG_ITEM;
 
@@ -26,10 +26,10 @@ public class BDContentSkin extends BDSkin<BDContent> {
     public void initUI() {
         getChildren().setAll(control.borderPane);
         HBox.setHgrow(control.verticalSplitPane, Priority.ALWAYS);
-        AnchorPane.setTopAnchor(control.horizontalSplitPane,.0);
-        AnchorPane.setRightAnchor(control.horizontalSplitPane,.0);
-        AnchorPane.setBottomAnchor(control.horizontalSplitPane,.0);
-        AnchorPane.setLeftAnchor(control.horizontalSplitPane,.0);
+        AnchorPane.setTopAnchor(control.verticalSplitPane, .0);
+        AnchorPane.setRightAnchor(control.verticalSplitPane, .0);
+        AnchorPane.setBottomAnchor(control.verticalSplitPane, .0);
+        AnchorPane.setLeftAnchor(control.verticalSplitPane, .0);
         control.verticalSplitPane.setOrientation(Orientation.VERTICAL);
         control.leftSplitPane.setOrientation(Orientation.VERTICAL);
         control.rightSplitPane.setOrientation(Orientation.VERTICAL);
@@ -42,6 +42,12 @@ public class BDContentSkin extends BDSkin<BDContent> {
         control.centerPane.getStyleClass().add("bd-content-center-pane");
         control.splitBack.getStyleClass().add("bd-split-back");
         control.splitBack.setMouseTransparent(true);
+        control.tooltip.setMouseTransparent(true);
+        control.tooltip.getStyleClass().add("bd-content-tooltip");
+        control.text.getStyleClass().add("bd-content-tooltip-text");
+        control.setMinSize(0,0);
+        control.horizontalRootPane.setMinSize(0,0);
+        control.hideToolTip();
     }
 
     @Override
@@ -59,20 +65,23 @@ public class BDContentSkin extends BDSkin<BDContent> {
                     if (DRAG_ITEM == null || !control.acceptDragItem(DRAG_ITEM)) return;
                     event.consume();
                     event.acceptTransferModes(TransferMode.MOVE);
-                    if (Util.searchEventTargetNode(event.getTarget(), BDSidebar.class) instanceof BDSidebar sidebar && (sidebar.direction.equals(BDDirection.LEFT) || sidebar.direction.equals(BDDirection.RIGHT))) {
-                        control.changeSplitBack(calculate(event, sidebar));
+                    if (Util.searchEventTargetNode(event.getTarget(), BDSidebar.class) instanceof BDSidebar sidebar
+                            && (sidebar.direction.equals(BDDirection.LEFT) || sidebar.direction.equals(BDDirection.RIGHT))) {
+                        control.changeSplitBack(calculate(event, sidebar),event);
                     } else {
                         Bounds bounds = control.horizontalSplitPane.localToScene(control.horizontalSplitPane.getLayoutBounds());
                         control.refreshDivider();
                         if (!control.leftSideBar.isNone() && event.getSceneX() <= bounds.getMinX() + bounds.getWidth() * control.leftDivider)
-                            control.changeSplitBack(calculate(event, control.leftSideBar.get()));
+                            control.changeSplitBack(calculate(event, control.leftSideBar.get()),event);
                         else if (!control.rightSideBar.isNone() && event.getSceneX() >= bounds.getMinX() + bounds.getWidth() * control.rightDivider)
-                            control.changeSplitBack(calculate(event, control.rightSideBar.get()));
-                        else
+                            control.changeSplitBack(calculate(event, control.rightSideBar.get()),event);
+                        else {
                             control.hideAllItemBack();
+                            control.dragHove(null,event.getSceneX(),event.getSceneY());
+                        }
                     }
                 })
-                .addEventFilter(control.borderPane, DragEvent.DRAG_EXITED, event -> {
+                .addEventFilter(control.borderPane, DragEvent.DRAG_EXITED, _ -> {
                     if (DRAG_ITEM == null || !control.acceptExitItem(DRAG_ITEM)) return;
                     control.hideAllItemBack();
                     if (tempSidebar != null)
@@ -91,31 +100,29 @@ public class BDContentSkin extends BDSkin<BDContent> {
                         else if (!control.rightSideBar.isNone() && event.getSceneX() >= bounds.getMinX() + bounds.getWidth() * control.rightDivider)
                             bdDragData = calculate(event, control.rightSideBar.get());
                     }
-
-                    BDSidebar oldSidebar = DRAG_ITEM.sidebar.get();
-                    if (bdDragData == null)
-                        oldSidebar.cleanBDSideBarItem(DRAG_ITEM);
-                    else {
+                    BDSidebar oldSidebar = DRAG_ITEM.tempSidebar == null?DRAG_ITEM.sidebar.get():DRAG_ITEM.tempSidebar;
+                    if (bdDragData != null){
                         BDSidebar newSideBar = null;
-                        if (bdDragData.direction().equals(BDDirection.LEFT))
+                        if (bdDragData.getDirection().equals(BDDirection.LEFT))
                             newSideBar = control.leftSideBar.get();
-                        else if (bdDragData.direction().equals(BDDirection.RIGHT))
+                        else if (bdDragData.getDirection().equals(BDDirection.RIGHT))
                             newSideBar = control.rightSideBar.get();
-                        else if (bdDragData.direction().equals(BDDirection.BOTTOM)) {
-                            if (bdDragData.inSequence().equals(BDInSequence.FRONT))
+                        else if (bdDragData.getDirection().equals(BDDirection.BOTTOM)) {
+                            if (bdDragData.getInSequence().equals(BDInSequence.FRONT))
                                 newSideBar = control.leftSideBar.get();
                             else newSideBar = control.rightSideBar.get();
                         }
                         if (newSideBar == null)
-                            throw new IllegalArgumentException("DRAG_ITEM的DIRECTION不能为：" + bdDragData.direction());
-                        if (!bdDragData.direction().equals(DRAG_ITEM.getDirection())
-                                || !DRAG_ITEM.getInSequence().equals(bdDragData.inSequence()))
+                            throw new IllegalArgumentException("DRAG_ITEM的DIRECTION不能为：" + bdDragData.getDirection());
+                        if (!bdDragData.getDirection().equals(DRAG_ITEM.getDirection())
+                                || !DRAG_ITEM.getInSequence().equals(bdDragData.getInSequence()))
                             oldSidebar.cleanBDSideBarItem(DRAG_ITEM);
-                        DRAG_ITEM.sidebar.set(newSideBar);
-                        DRAG_ITEM.setDirection(bdDragData.direction());
-                        DRAG_ITEM.setInSequence(bdDragData.inSequence());
-                        DRAG_ITEM.tempIndex = bdDragData.index();
-                    }
+
+                        DRAG_ITEM.tempSidebar = newSideBar;
+                        DRAG_ITEM.setDirection(bdDragData.getDirection());
+                        DRAG_ITEM.setInSequence(bdDragData.getInSequence());
+                        DRAG_ITEM.tempIndex = bdDragData.getItemBackIndex();
+                    } else DRAG_ITEM.tempSidebar = null;
                     control.hideAllItemBack();
                 });
     }
@@ -129,7 +136,7 @@ public class BDContentSkin extends BDSkin<BDContent> {
         BDSidebar.BDDragData bdDragData = sidebar.calculateDragData(event.getSceneY());
         if (bdDragData == null) sidebar.hideItemBack();
         else {
-            sidebar.addItemNode(bdDragData.direction(), bdDragData.inSequence(), bdDragData.index(), sidebar.itemBack);
+            bdDragData.setItemBackIndex(sidebar.addItemNode(bdDragData.getDirection(), bdDragData.getInSequence(), bdDragData.getIndex(), sidebar.itemBack));
             sidebar.itemBack.setHeight(DRAG_ITEM.cachedHeight);
             sidebar.itemBack.setWidth(DRAG_ITEM.cachedWidth);
         }

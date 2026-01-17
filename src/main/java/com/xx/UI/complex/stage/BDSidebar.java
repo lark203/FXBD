@@ -10,6 +10,7 @@ import javafx.scene.control.Separator;
 import javafx.scene.input.DataFormat;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -110,18 +111,32 @@ class BDSidebar extends BDControl {
     }
 
     final void addFrontSideNode(Node node, BDInSequence inSequence) {
-        if (node instanceof BDSideBarItem item) item.sidebar.set(this);
         switch (inSequence) {
-            case FRONT -> fronFrontSideBarItems.add(node);
-            case AFTER -> fronSideBarItems.add(node);
+            case FRONT -> {
+                fronFrontSideBarItems.add(node);
+                if (node instanceof BDSideBarItem item) {
+                    item.sidebar.set(this);
+                    item.oldIndex = fronFrontSideBarItems.size() - 1;
+                }
+            }
+            case AFTER -> {
+                fronSideBarItems.add(node);
+                if (node instanceof BDSideBarItem item) {
+                    item.sidebar.set(this);
+                    item.oldIndex = fronSideBarItems.size() - 1;
+                }
+            }
             case null -> {
             }
         }
     }
 
     final void addAfterSideNode(Node node) {
-        if (node instanceof BDSideBarItem item) item.sidebar.set(this);
         afterSideBarItems.add(node);
+        if (node instanceof BDSideBarItem item) {
+            item.sidebar.set(this);
+            item.oldIndex = afterSideBarItems.size() - 1;
+        }
     }
 
     public boolean acceptDragItem(BDSideBarItem item) {
@@ -136,7 +151,7 @@ class BDSidebar extends BDControl {
         removeItemNode(itemBack);
     }
 
-    void addItemNode(BDDirection direction, BDInSequence inSequence, int index, Node item) {
+    int addItemNode(BDDirection direction, BDInSequence inSequence, int index, Node item) {
         // 定义所有可能的列表
         List<List<Node>> allLists = List.of(
                 fronFrontSideBarItems,
@@ -159,7 +174,7 @@ class BDSidebar extends BDControl {
         }
 
         if (targetList == null) {
-            return;
+            return -1;
         }
 
         // 在所有列表中查找项目
@@ -179,7 +194,7 @@ class BDSidebar extends BDControl {
             // 项目已存在
             if (sourceList == targetList && currentIndex == index) {
                 // 在同一个列表的同一个位置，直接跳过
-                return;
+                return index;
             }
 
             // 从原列表中移除
@@ -194,7 +209,11 @@ class BDSidebar extends BDControl {
         // 添加到目标列表的新位置
         if (index > targetList.size()) index = targetList.size();
         targetList.add(index, item);
+        if (item instanceof BDSideBarItem item1)
+            item1.oldIndex = index;
+        return targetList.indexOf(item);
     }
+
 
     void addItemNode(BDSideBarItem item, int index) {
         addItemNode(item.getDirection(), item.getInSequence(), index, item);
@@ -210,8 +229,14 @@ class BDSidebar extends BDControl {
     void showSideBarItem(BDSideBarItem sideBarItem) {
 //        判断是否需要启动动画。
         AtomicBoolean b = new AtomicBoolean(true);
-        if (sideBarItem.isWindowOpen()) sideBarItem.stage.get().show();
-        else {
+        if (sideBarItem.isWindowOpen()) {
+            if (sideBarItem.stage.get() == null) {
+                content.closeSidebar(sideBarItem);
+                Stage stage = sideBarItem.windowShow();
+                stage.initOwner(this.getScene().getWindow());
+                stage.show();
+            } else sideBarItem.stage.get().show();
+        } else {
             switch (sideBarItem.getDirection()) {
                 case LEFT, RIGHT -> {
                     if (sideBarItem.getInSequence().equals(BDInSequence.FRONT)) fronFrontSideBarItems.forEach(node -> {
@@ -241,7 +266,10 @@ class BDSidebar extends BDControl {
     }
 
     void closeSideBarItem(BDSideBarItem sideBarItem) {
-        content.closeSidebar(sideBarItem);
+        if (sideBarItem.isWindowOpen())
+            sideBarItem.windowHide();
+        else
+            content.closeSidebar(sideBarItem);
     }
 
     @Override
@@ -249,6 +277,49 @@ class BDSidebar extends BDControl {
         return new BDSideBarSkin(this);
     }
 
-    record BDDragData(BDDirection direction, BDInSequence inSequence, int index) {
+    public class BDDragData {
+        BDDirection direction;
+        BDInSequence inSequence;
+        int index;
+        int itemBackIndex;
+
+        public BDDragData(BDDirection direction, BDInSequence inSequence, int index) {
+            this.direction = direction;
+            this.index = index;
+            this.inSequence = inSequence;
+            this.itemBackIndex = index;
+        }
+
+        public BDDirection getDirection() {
+            return direction;
+        }
+
+        public void setDirection(BDDirection direction) {
+            this.direction = direction;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public void setIndex(int index) {
+            this.index = index;
+        }
+
+        public BDInSequence getInSequence() {
+            return inSequence;
+        }
+
+        public void setInSequence(BDInSequence inSequence) {
+            this.inSequence = inSequence;
+        }
+
+        public int getItemBackIndex() {
+            return itemBackIndex;
+        }
+
+        public void setItemBackIndex(int itemBackIndex) {
+            this.itemBackIndex = itemBackIndex;
+        }
     }
 }

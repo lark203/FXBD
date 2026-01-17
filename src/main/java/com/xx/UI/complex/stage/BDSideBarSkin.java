@@ -86,5 +86,9 @@ class BDSideBarSkin extends BDSkin<BDSidebar> {
         pane.getStyleClass().add((control.direction == BDDirection.LEFT || control.direction == BDDirection.RIGHT) ? "vertical" : "horizontal");
         control.itemBack.getStyleClass().add("item-back");
         getChildren().setAll(pane);
+        control.setMinSize(0,0);
+        frontRoot.setMinSize(0,0);
+        afterPane.setMinSize(0,0);
+        pane.setMinSize(0,0);
     }
 }

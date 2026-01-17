@@ -1,148 +1,657 @@
 package com.xx.demo;
 
 import com.xx.UI.basic.BDButton;
+import com.xx.UI.complex.BDTabPane.BDTab;
+import com.xx.UI.complex.BDTabPane.BDTabItem;
+import com.xx.UI.complex.BDTabPane.BDTabPane;
 import com.xx.UI.complex.stage.*;
+import com.xx.UI.complex.textArea.content.segment.NodeSegment;
 import com.xx.UI.complex.textArea.view.BDTextArea;
 import com.xx.UI.complex.textArea.view.BDTextAreaSearch;
+import com.xx.UI.complex.textArea.view.dataFormat.example.java.BDJavaTextInitFactory;
+import com.xx.UI.complex.textArea.view.dataFormat.example.json.BDJsonTextInitFactory;
 import com.xx.UI.ui.BDIcon;
+import com.xx.UI.util.BDMapping;
 import com.xx.UI.util.Util;
 import javafx.application.Application;
-import javafx.scene.control.TextField;
-import javafx.scene.text.Text;
+import javafx.event.ActionEvent;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
+
 /**
- * BDStage 演示程序
+ * BDStage 演示程序 - 增强版
  */
 public class BDStageDemo extends Application {
+
+    private final BDMapping globalMapping = new BDMapping();
 
     @Override
     public void start(Stage stage) throws Exception {
         // 构建标题栏
         BDHeaderBarBuilder headerBarBuilder = new BDHeaderBarBuilder()
                 .addIcon(Util.getImageView(25, BDIcon.IDEA_MODULE))
-                .addTitle("BD Stage Demo - 全面测试版")
+                .addTitle("BD Stage Demo 测试 ")
                 .addMinimizeButton()
                 .addMaximizeButton()
                 .addCloseButton();
 
         // 构建内容区域 - 项目侧边栏 (LEFT, FRONT)
         BDSideContent fileContent = new BDSideContent();
-        fileContent.setTitle("项目文件");
-        BDTextArea fileTextArea = new BDTextArea("项目文件内容展示区域\n- src/main/java\n- src/test/java\n- pom.xml\n- README.md");
-        fileContent.setContent(fileTextArea);
-        BDSideBarItem projectItem = new BDSideBarItem("项目", Util.getImageView(30, BDIcon.FOLDER), Util.getImageView(30, BDIcon.FOLDER_DARK), BDDirection.LEFT, BDInSequence.FRONT, fileContent);
+        fileContent.setTitle("项目文件管理器");
+        BDTextArea fileTextArea = initProjectTextArea();
+        fileContent.setContent(new BDTextAreaSearch(fileTextArea));
+        BDSideBarItem projectItem = new BDSideBarItem(
+            "项目",
+            Util.getImageView(30, BDIcon.FOLDER),
+            Util.getImageView(30, BDIcon.FOLDER_DARK),
+            BDDirection.LEFT,
+            BDInSequence.FRONT,
+            fileContent
+        );
 
-        // 构建内容区域 - 搜索侧边栏 (LEFT, AFTER) - 第一个搜索项
+        // 构建内容区域 - 搜索侧边栏 (LEFT, AFTER)
         BDSideContent searchContent = new BDSideContent();
-        searchContent.setTitle("搜索结果");
-        BDTextArea searchTextArea = new BDTextArea("搜索功能测试\n- 搜索框功能\n- 搜索历史\n- 搜索结果高亮\n- 高级搜索选项");
-        searchContent.setContent(searchTextArea);
-        BDSideBarItem searchItem = new BDSideBarItem("搜索", Util.getImageView(30, BDIcon.SEARCH), Util.getImageView(30, BDIcon.SEARCH_DARK), BDDirection.LEFT, BDInSequence.AFTER, searchContent);
+        searchContent.setTitle("智能搜索");
+        BDTextArea searchTextArea = new BDTextArea("""
+            搜索功能演示：
+            1. 全局搜索 (Ctrl+Shift+F)
+            2. 文件内搜索 (Ctrl+F)
+            3. 替换功能 (Ctrl+R)
+            4. 正则表达式搜索
+            
+            搜索历史：
+            • BDTextArea.java
+            • BDMapping.java
+            • BDStageBuilder.java
+            """);
+        searchContent.setContent(new BDTextAreaSearch(searchTextArea));
+        BDSideBarItem searchItem = new BDSideBarItem(
+            "搜索",
+            Util.getImageView(30, BDIcon.SEARCH),
+            Util.getImageView(30, BDIcon.SEARCH_DARK),
+            BDDirection.LEFT,
+            BDInSequence.AFTER,
+            searchContent
+        );
 
-        // 构建内容区域 - 搜索侧边栏 (LEFT, AFTER) - 第二个搜索项
-        BDSideContent searchContent2 = new BDSideContent();
-        searchContent2.setTitle("高级搜索");
-        BDTextArea searchTextArea2 = new BDTextArea("高级搜索功能测试\n- 正则表达式搜索\n- 文件类型过滤\n- 大小写敏感\n- 搜索范围设置");
-        searchContent2.setContent(searchTextArea2);
-        BDSideBarItem searchItem2 = new BDSideBarItem("高级搜索", Util.getImageView(30, BDIcon.SEARCH), Util.getImageView(30, BDIcon.SEARCH_DARK), BDDirection.LEFT, BDInSequence.AFTER, searchContent2);
+        // 构建内容区域 - Git侧边栏 (LEFT, AFTER)
+        BDSideContent gitContent = new BDSideContent();
+        gitContent.setTitle("版本控制");
+        BDTextArea gitTextArea = new BDTextArea("""
+            Git状态：
+            • 主分支: main
+            • 当前修改: 2个文件
+            • 未暂存: BDMappingDemo.java
+            • 已暂存: BDStageDemo.java
+            
+            提交记录：
+            • 修复BDMapping解绑问题
+            • 优化BDStage性能
+            • 添加BDTabPane示例
+            """);
+        gitContent.setContent(gitTextArea);
+        BDSideBarItem gitItem = new BDSideBarItem(
+            "Git",
+            Util.getImageView(30, BDIcon.FOLDER_GITHUB),
+            Util.getImageView(30, BDIcon.FOLDER_GITHUB_DARK),
+            BDDirection.LEFT,
+            BDInSequence.AFTER,
+            gitContent
+        );
 
         // 构建内容区域 - 书签侧边栏 (RIGHT, FRONT)
         BDSideContent bookmarkContent = new BDSideContent();
-        bookmarkContent.setTitle("常用书签");
-        BDTextArea bookmarkTextArea = new BDTextArea("书签管理\n- 文档链接\n- API参考\n- 学习资源\n- 工具网站");
+        bookmarkContent.setTitle("书签和收藏");
+        BDTextArea bookmarkTextArea = initBookmarkTextArea();
         bookmarkContent.setContent(bookmarkTextArea);
-        BDSideBarItem bookmarkItem = new BDSideBarItem("书签", Util.getImageView(30, BDIcon.BOOKMARK), Util.getImageView(30, BDIcon.BOOKMARK_DARK), BDDirection.RIGHT, BDInSequence.FRONT, bookmarkContent);
+        BDSideBarItem bookmarkItem = new BDSideBarItem(
+            "书签",
+            Util.getImageView(30, BDIcon.BOOKMARK),
+            Util.getImageView(30, BDIcon.BOOKMARK_DARK),
+            BDDirection.RIGHT,
+            BDInSequence.FRONT,
+            bookmarkContent
+        );
 
         // 构建内容区域 - 设置侧边栏 (RIGHT, AFTER)
         BDSideContent settingContent = new BDSideContent();
-        settingContent.setTitle("系统设置");
-        BDTextArea settingTextArea = new BDTextArea("系统配置\n- 外观设置\n- 键盘快捷键\n- 编辑器选项\n- 插件管理\n- 用户偏好");
-        settingContent.setContent(settingTextArea);
-        BDSideBarItem settingItem = new BDSideBarItem("设置", Util.getImageView(30, BDIcon.SETTINGS), Util.getImageView(30, BDIcon.SETTINGS_DARK), BDDirection.RIGHT, BDInSequence.AFTER, settingContent);
+        settingContent.setTitle("系统设置和配置");
+        VBox settingVBox = new VBox(10);
 
-        // 构建内容区域 - 帮助侧边栏 (RIGHT, FRONT) - 第一个帮助项
+        // 主题选择
+        ComboBox<String> themeComboBox = new ComboBox<>();
+        themeComboBox.getItems().addAll("浅色主题", "深色主题", "蓝色主题", "绿色主题");
+        themeComboBox.setValue("浅色主题");
+        globalMapping.addEventHandler(themeComboBox, ActionEvent.ACTION, e -> {
+            System.out.println("切换主题为: " + themeComboBox.getValue());
+        });
+
+        // 字体大小选择
+        Slider fontSizeSlider = new Slider(10, 24, 14);
+        fontSizeSlider.setShowTickLabels(true);
+        fontSizeSlider.setShowTickMarks(true);
+        fontSizeSlider.setMajorTickUnit(2);
+
+        // 自动保存开关
+        ToggleSwitch autoSaveSwitch = new ToggleSwitch("自动保存");
+        autoSaveSwitch.setSelected(true);
+
+        // 快捷键显示
+        BDTextArea shortcutArea = new BDTextArea("""
+            常用快捷键：
+            Ctrl+S: 保存文件
+            Ctrl+F: 查找
+            Ctrl+R: 替换
+            Ctrl+D: 复制行
+            Ctrl+/: 注释行
+            Ctrl+Shift+F: 全局搜索
+            """);
+
+        settingVBox.getChildren().addAll(
+            new Label("主题:"), themeComboBox,
+            new Label("字体大小:"), fontSizeSlider,
+            autoSaveSwitch,
+            new Separator(),
+            new Label("快捷键列表:"), shortcutArea
+        );
+
+        settingContent.setContent(settingVBox);
+        BDSideBarItem settingItem = new BDSideBarItem(
+            "设置",
+            Util.getImageView(30, BDIcon.SETTINGS),
+            Util.getImageView(30, BDIcon.SETTINGS_DARK),
+            BDDirection.RIGHT,
+            BDInSequence.AFTER,
+            settingContent
+        );
+
+        // 构建内容区域 - 帮助侧边栏 (RIGHT, FRONT)
         BDSideContent helpContent = new BDSideContent();
-        helpContent.setTitle("帮助信息");
-        BDTextArea helpTextArea = new BDTextArea("帮助文档\n- 快速入门\n- 功能说明\n- 常见问题\n- 联系支持");
+        helpContent.setTitle("帮助和文档");
+        BDTextArea helpTextArea = new BDTextArea("""
+            欢迎使用BDUI框架！
+            
+            核心组件：
+            1. BDStage - 窗口管理
+            2. BDTabPane - 标签页管理
+            3. BDTextArea - 文本编辑
+            4. BDMapping - 绑定管理
+            
+            快速开始：
+            • 查看示例代码
+            • 阅读API文档
+            • 加入社区讨论
+            
+            技术支持：
+            • Email: support@xx.com
+            • GitHub: github.com/xx/BDUI
+            """);
         helpContent.setContent(helpTextArea);
-        BDSideBarItem helpItem = new BDSideBarItem("帮助", Util.getImageView(30, BDIcon.HELP), Util.getImageView(30, BDIcon.HELP_DARK), BDDirection.RIGHT, BDInSequence.FRONT, helpContent);
-
-        // 构建内容区域 - 帮助侧边栏 (RIGHT, FRONT) - 第二个帮助项
-        BDSideContent helpContent2 = new BDSideContent();
-        helpContent2.setTitle("教程指南");
-        BDTextArea helpTextArea2 = new BDTextArea("教程指南\n- 入门教程\n- 高级功能\n- 最佳实践\n- 视频教程");
-        helpContent2.setContent(helpTextArea2);
-        BDSideBarItem helpItem2 = new BDSideBarItem("教程", Util.getImageView(30, BDIcon.HELP), Util.getImageView(30, BDIcon.HELP_DARK), BDDirection.RIGHT, BDInSequence.FRONT, helpContent2);
+        BDSideBarItem helpItem = new BDSideBarItem(
+            "帮助",
+            Util.getImageView(30, BDIcon.HELP),
+            Util.getImageView(30, BDIcon.HELP_DARK),
+            BDDirection.RIGHT,
+            BDInSequence.FRONT,
+            helpContent
+        );
 
         // 构建内容区域 - 控制台侧边栏 (BOTTOM, FRONT)
         BDSideContent consoleContent = new BDSideContent();
         consoleContent.setTitle("控制台输出");
-        BDTextArea consoleTextArea = new BDTextArea("控制台信息展示\n- 系统日志\n- 错误信息\n- 调试输出\n- 应用状态");
-        consoleContent.setContent(consoleTextArea);
-        BDSideBarItem consoleItem = new BDSideBarItem("控制台", Util.getImageView(30, BDIcon.CONSOLE_RUN), Util.getImageView(30, BDIcon.CONSOLE_RUN_DARK), BDDirection.BOTTOM, BDInSequence.FRONT, consoleContent);
+        BDTextArea consoleTextArea = initConsoleTextArea();
+        consoleContent.setContent(new BDTextAreaSearch(consoleTextArea));
+        BDSideBarItem consoleItem = new BDSideBarItem(
+            "控制台",
+            Util.getImageView(30, BDIcon.CONSOLE_RUN),
+            Util.getImageView(30, BDIcon.CONSOLE_RUN_DARK),
+            BDDirection.BOTTOM,
+            BDInSequence.FRONT,
+            consoleContent
+        );
 
         // 构建内容区域 - 输出侧边栏 (BOTTOM, AFTER)
         BDSideContent outputContent = new BDSideContent();
-        outputContent.setTitle("构建输出");
-        BDTextArea outputTextArea = new BDTextArea("构建和输出信息\n- 编译结果\n- 执行日志\n- 性能统计\n- 构建历史");
+        outputContent.setTitle("构建和输出");
+        BDTextArea outputTextArea = new BDTextArea("""
+            === 构建开始 ===
+            [INFO] 清理目标目录...
+            [INFO] 编译Java文件...
+            [INFO] 编译成功: 15个文件
+            [INFO] 打包应用...
+            [INFO] 构建完成!
+            =================
+            
+            性能统计：
+            • 编译时间: 2.3秒
+            • 内存使用: 256MB
+            • 文件数量: 15个
+            """);
         outputContent.setContent(outputTextArea);
-        BDSideBarItem outputItem = new BDSideBarItem("输出", Util.getImageView(30, BDIcon.DBMS_OUTPUT), Util.getImageView(30, BDIcon.DBMS_OUTPUT_DARK), BDDirection.BOTTOM, BDInSequence.AFTER, outputContent);
+        BDSideBarItem outputItem = new BDSideBarItem(
+            "输出",
+            Util.getImageView(30, BDIcon.DBMS_OUTPUT),
+            Util.getImageView(30, BDIcon.DBMS_OUTPUT_DARK),
+            BDDirection.BOTTOM,
+            BDInSequence.AFTER,
+            outputContent
+        );
 
-        // 构建内容区域 - 通知侧边栏 (BOTTOM, FRONT)
-        BDSideContent notificationContent = new BDSideContent();
-        notificationContent.setTitle("系统通知");
-        BDTextArea notificationTextArea = new BDTextArea("通知和消息中心\n- 系统提醒\n- 更新通知\n- 任务完成\n- 错误警告");
-        notificationContent.setContent(notificationTextArea);
-        BDSideBarItem notificationItem = new BDSideBarItem("通知", Util.getImageView(30, BDIcon.WARNING), Util.getImageView(30, BDIcon.WARNING_DARK), BDDirection.BOTTOM, BDInSequence.FRONT, notificationContent);
+        // 构建内容区域 - 调试侧边栏 (BOTTOM, FRONT)
+        BDSideContent debugContent = new BDSideContent();
+        debugContent.setTitle("调试工具");
+        VBox debugVBox = new VBox(10);
 
-        // 创建中心内容区域 - 搜索文本区域
-        BDTextArea centerTextArea = new BDTextArea("""
-                欢迎使用 BDStage 演示程序！
-                此程序展示了完整的界面组件功能：
-                1. 标题栏包含图标、标题和窗口控制按钮
-                2. 左侧侧边栏包含项目、搜索(前后顺序)
-                3. 右侧侧边栏包含书签、设置、帮助(前后顺序)
-                4. 底部侧边栏包含控制台、输出、通知(前后顺序)
-                5. 中心区域支持搜索和文本编辑
+        // 断点列表
+        ListView<String> breakpointList = new ListView<>();
+        breakpointList.getItems().addAll(
+            "BDMappingDemo.java:25",
+            "BDStageDemo.java:120",
+            "BDTextAreaDemo.java:45",
+            "BDTabPaneDemo.java:80"
+        );
+
+        // 调试按钮
+        HBox debugButtons = new HBox(10);
+        BDButton btnStep = new BDButton("单步执行");
+        BDButton btnContinue = new BDButton("继续");
+        BDButton btnStop = new BDButton("停止");
+        debugButtons.getChildren().addAll(btnStep, btnContinue, btnStop);
+        debugButtons.setAlignment(Pos.CENTER);
+
+        // 变量监视
+        BDTextArea watchArea = new BDTextArea("""
+            监视变量：
+            • globalMapping: BDMapping实例
+            • stage: Stage实例
+            • consoleTextArea: BDTextArea实例
+            """);
+
+        debugVBox.getChildren().addAll(
+            new Label("断点列表:"), breakpointList,
+            debugButtons,
+            new Separator(),
+            new Label("变量监视:"), watchArea
+        );
+
+        debugContent.setContent(debugVBox);
+        BDSideBarItem debugItem = new BDSideBarItem(
+            "调试",
+            Util.getImageView(30, BDIcon.DEBUG),
+            Util.getImageView(30, BDIcon.DEBUG_DARK),
+            BDDirection.BOTTOM,
+            BDInSequence.FRONT,
+            debugContent
+        );
+
+        // 创建中心内容区域 - 带标签页的文本编辑器
+        BDTabItem rootTabItem = new BDTabItem();
+
+        // 添加示例标签页
+        try {
+            // 添加Java文件标签页
+            Path javaPath = Util.getPath("src/main/java/com/xx/UI/complex/stage/BDStageBuilder.java");
+            rootTabItem.addTab(createFileTab(javaPath));
+
+            // 添加JSON文件标签页
+            Path jsonPath = Util.getPath("src/main/resources/business.json");
+            if (Files.exists(jsonPath)) {
+                rootTabItem.addTab(createFileTab(jsonPath));
+            }
+
+            // 添加其他示例标签页
+            rootTabItem.addTab(createDemoTab("BDMapping示例", BDMappingDemo.class.getSimpleName() + ".java",
+                """
+                package com.xx.demo;
                 
-                功能测试点：
-                - 侧边栏展开/收起
-                - 文本区域编辑功能
-                - 搜索功能
-                - 窗口最小化/最大化/关闭
-                - 主题样式切换
-                - 响应式布局
-                - 所有方向和顺序的侧边栏测试""");
-        BDTextAreaSearch centerSearchArea = new BDTextAreaSearch(centerTextArea);
+                import com.xx.UI.util.BDMapping;
+                import javafx.beans.property.SimpleStringProperty;
+                
+                public class BDMappingDemo {
+                    public static void main(String[] args) {
+                        // 创建BDMapping实例管理所有绑定
+                        BDMapping mapping = new BDMapping();
+                        
+                        SimpleStringProperty prop1 = new SimpleStringProperty("初始值");
+                        SimpleStringProperty prop2 = new SimpleStringProperty();
+                        
+                        // 双向绑定
+                        mapping.bindBidirectional(prop1, prop2);
+                        
+                        // 添加监听器
+                        mapping.addListener(prop1, (obs, oldVal, newVal) -> {
+                            System.out.println("属性变化: " + oldVal + " -> " + newVal);
+                        });
+                        
+                        prop1.set("新值"); // 会触发监听器
+                        System.out.println("prop2的值: " + prop2.get());
+                        
+                        // 清理所有绑定
+                        mapping.dispose();
+                    }
+                }
+                """, BDIcon.CLASS));
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 创建带有工具栏的中心区域
+
+        // 工具栏
+        HBox toolbar = new HBox(10);
+        BDButton btnNew = new BDButton();
+        btnNew.setDefaultGraphic(Util.getImageView(25,BDIcon.OPEN_NEW_TAB_DARK));
+        btnNew.getStyleClass().add("icon");
+        btnNew.setHoverFill(Color.web("#3D3E43"));
+        btnNew.setPressedFill(Color.web("#3D3E43"));
+        btnNew.setSelectable(false);
+        BDButton btnOpen = new BDButton();
+        btnOpen.setDefaultGraphic(Util.getImageView(25,BDIcon.OPEN_DARK));
+        btnOpen.getStyleClass().add("icon");
+        btnOpen.setHoverFill(Color.web("#3D3E43"));
+        btnOpen.setPressedFill(Color.web("#3D3E43"));
+        btnOpen.setSelectable(false);
+        BDButton btnSave = new BDButton();
+        btnSave.setDefaultGraphic(Util.getImageView(25,BDIcon.SAVE_DARK));
+        btnSave.getStyleClass().add("icon");
+        btnSave.setHoverFill(Color.web("#3D3E43"));
+        btnSave.setPressedFill(Color.web("#3D3E43"));
+        btnSave.setSelectable(false);
+        BDButton btnRun = new BDButton();
+        btnRun.setDefaultGraphic(Util.getImageView(25,BDIcon.RUN_DARK));
+        btnRun.getStyleClass().add("icon");
+        btnRun.setHoverFill(Color.web("#3D3E43"));
+        btnRun.setPressedFill(Color.web("#3D3E43"));
+        btnRun.setSelectable(false);
+        BDButton btnDebug = new BDButton();
+        btnDebug.setDefaultGraphic(Util.getImageView(25,BDIcon.DEBUG_DARK));
+        btnDebug.getStyleClass().add("icon");
+        btnDebug.setHoverFill(Color.web("#3D3E43"));
+        btnDebug.setPressedFill(Color.web("#3D3E43"));
+        btnDebug.setSelectable(false);
+        toolbar.getChildren().addAll(btnNew, btnOpen, btnSave, btnRun, btnDebug);
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+        toolbar.setBorder(new Border(new BorderStroke(Color.BLACK,BorderStrokeStyle.SOLID,new CornerRadii(1),new BorderWidths(0,0,1,0))));
+
+        // 绑定工具栏按钮事件
+        globalMapping.addEventHandler(btnNew, ActionEvent.ACTION, e -> {
+            System.out.println("新建文件");
+            rootTabItem.addTab(createDemoTab("新文件", "NewFile.java", "// 新文件内容", BDIcon.CLASS));
+        });
+
+        globalMapping.addEventHandler(btnRun, ActionEvent.ACTION, e -> {
+            consoleTextArea.appendText("[执行] 运行程序...\n");
+        });
+
+        // 标签页容器
+        BDTabPane centerTabPane = new BDTabPane(rootTabItem);
+
+        // 构建内容构建器
         BDContentBuilder contentBuilder = new BDContentBuilder()
-                .addSideNode(BDDirection.TOP,BDInSequence.FRONT,new TextField("顶部前"))
-                .addSideNode(BDDirection.TOP,BDInSequence.AFTER,new TextField("顶部后"))
-                .addSideNode(BDDirection.LEFT, BDInSequence.FRONT, new BDButton("左侧前"))
-                .addSideNode(projectItem, searchItem, searchItem2, bookmarkItem, helpItem, helpItem2, settingItem)
-                .addSideNode(consoleItem, outputItem, notificationItem)
-                .addCenterNode(centerSearchArea)
-                .addSideNode(BDDirection.BOTTOM, BDInSequence.FRONT, new TextField("底部前"))
-                .addSideNode(BDDirection.BOTTOM, BDInSequence.AFTER, new TextField("底部后"));
+                .addSideNode(projectItem, searchItem, gitItem)
+                .addSideNode(bookmarkItem, helpItem, settingItem)
+                .addSideNode(consoleItem, outputItem, debugItem)
+                .addCenterNode(centerTabPane);
 
         // 构建主窗口
         BDStageBuilder stageBuilder = new BDStageBuilder()
                 .setContent(contentBuilder.build())
                 .setStyle(Util.getResourceUrl("/css/cupertino-light.css"))
-                .setHeaderBar(headerBarBuilder);
+                .setHeaderBar(headerBarBuilder.addCenter(toolbar));
 
         // 显示窗口
-        stageBuilder.build().show();
-        
-        // 添加窗口事件监听器进行测试
-        stage.setOnCloseRequest(event -> {
-            System.out.println("窗口关闭事件触发");
+        Stage bdStage = stageBuilder.build();
+        bdStage.setWidth(1200);
+        bdStage.setHeight(1000);
+        bdStage.show();
+
+        // 添加窗口事件监听器
+        globalMapping.addEventHandler(bdStage, javafx.stage.WindowEvent.WINDOW_CLOSE_REQUEST, e -> {
+            System.out.println("窗口关闭请求 - 保存工作...");
+            // 可以在这里添加保存逻辑
         });
-        
-        stage.setOnShown(event -> {
-            System.out.println("窗口显示事件触发");
+
+        globalMapping.addEventHandler(bdStage, javafx.stage.WindowEvent.WINDOW_SHOWN, e -> {
+            System.out.println("BDStage窗口已显示");
+            consoleTextArea.appendText("[系统] BDStageDemo 启动成功\n");
+            consoleTextArea.appendText("[系统] 加载了 " + rootTabItem.getTabs().size() + " 个标签页\n");
         });
+
+        // 初始时展开所有侧边栏
+
     }
 
+    /**
+     * 初始化项目文本区域
+     */
+    private BDTextArea initProjectTextArea() {
+        BDTextArea area = new BDTextArea();
+
+        // 添加交互式节点
+        area.appendNode(new NodeSegment<>(" ", _ -> {
+            BDButton refreshBtn = new BDButton("刷新");
+            globalMapping.addEventHandler(refreshBtn, ActionEvent.ACTION,
+                e -> area.appendText("[刷新] 项目文件已更新\n"));
+            return refreshBtn;
+        }));
+
+        area.appendText("\n项目结构：\n");
+        area.appendText("📁 src/\n");
+        area.appendText("  📁 main/\n");
+        area.appendText("    📁 java/com/xx/\n");
+        area.appendText("      📁 UI/\n");
+        area.appendText("        📁 basic/\n");
+        area.appendText("        📁 complex/\n");
+        area.appendText("        📁 util/\n");
+        area.appendText("    📁 resources/\n");
+        area.appendText("📁 test/\n");
+        area.appendText("📁 target/\n");
+        area.appendText("📄 pom.xml\n");
+        area.appendText("📄 README.md\n");
+
+        return area;
+    }
+
+    /**
+     * 初始化书签文本区域
+     */
+    private BDTextArea initBookmarkTextArea() {
+        BDTextArea area = new BDTextArea();
+
+        // 设置JSON语法高亮
+        area.setTextInitFactory(new BDJsonTextInitFactory(area));
+
+        area.appendText("""
+            {
+              "bookmarks": [
+                {
+                  "name": "BDUI官方文档",
+                  "url": "https://bdui.xx.com/docs",
+                  "category": "文档"
+                },
+                {
+                  "name": "GitHub仓库",
+                  "url": "https://github.com/xx/BDUI",
+                  "category": "开发"
+                },
+                {
+                  "name": "API参考",
+                  "url": "https://bdui.xx.com/api",
+                  "category": "文档"
+                },
+                {
+                  "name": "问题反馈",
+                  "url": "https://github.com/xx/BDUI/issues",
+                  "category": "社区"
+                }
+              ],
+              "recent": [
+                "BDStageBuilder.java",
+                "BDMappingDemo.java",
+                "BDTabPaneDemo.java"
+              ]
+            }
+            """);
+
+        return area;
+    }
+
+    /**
+     * 初始化控制台文本区域
+     */
+    private BDTextArea initConsoleTextArea() {
+        BDTextArea area = new BDTextArea();
+
+        // 添加控制按钮
+        area.appendNode(new NodeSegment<>(" ", _ -> {
+            BDButton clearBtn = new BDButton("清空");
+            globalMapping.addEventHandler(clearBtn, ActionEvent.ACTION,
+                e -> area.delete(0,area.getLength()));
+            return clearBtn;
+        }));
+
+        area.appendNode(new NodeSegment<>(" ", _ -> {
+            BDButton copyBtn = new BDButton("复制");
+            globalMapping.addEventHandler(copyBtn, ActionEvent.ACTION,
+                e -> System.out.println("复制控制台内容"));
+            return copyBtn;
+        }));
+
+        area.appendText("\n=== 控制台日志 ===\n");
+        area.appendText("[INFO] 应用程序启动\n");
+        area.appendText("[INFO] 加载配置文件\n");
+        area.appendText("[INFO] 初始化UI组件\n");
+        area.appendText("[DEBUG] BDStage构建完成\n");
+
+        return area;
+    }
+
+    /**
+     * 创建文件标签页
+     */
+    private BDTab createFileTab(Path path) {
+        BDTab tab = new BDTab(path.getFileName().toString());
+
+        // 设置图标
+        String fileName = path.toString();
+        BDIcon icon = fileName.endsWith(".java") ? BDIcon.JAVA :
+                      fileName.endsWith(".json") ? BDIcon.JSON :
+                      fileName.endsWith(".xml") ? BDIcon.XML : BDIcon.FILE_UNREAD;
+        tab.setGraphic(Util.getImageView(20, icon));
+
+        try {
+            // 读取文件内容
+            String content = Files.readString(path);
+            BDTextArea textArea = new BDTextArea();
+            textArea.insertText(0, content);
+
+            // 设置语法高亮
+            if (fileName.endsWith(".java")) {
+                textArea.setTextInitFactory(new BDJavaTextInitFactory(textArea));
+            } else if (fileName.endsWith(".json")) {
+                textArea.setTextInitFactory(new BDJsonTextInitFactory(textArea));
+            }
+
+            // 添加搜索功能
+            BDTextAreaSearch search = new BDTextAreaSearch(textArea);
+            tab.setContent(search);
+
+            // 绑定清理
+            tab.getMapping().addChildren(search.getMapping());
+
+        } catch (IOException e) {
+            BDTextArea errorArea = new BDTextArea("无法读取文件: " + e.getMessage());
+            tab.setContent(errorArea);
+        }
+
+        return tab;
+    }
+
+    /**
+     * 创建示例标签页
+     */
+    private BDTab createDemoTab(String title, String fileName, String content, BDIcon icon) {
+        BDTab tab = new BDTab(title);
+        tab.setGraphic(Util.getImageView(20, icon));
+
+        BDTextArea textArea = new BDTextArea();
+        textArea.insertText(0, content);
+
+        // 根据文件类型设置语法高亮
+        if (fileName.endsWith(".java")) {
+            textArea.setTextInitFactory(new BDJavaTextInitFactory(textArea));
+        } else if (fileName.endsWith(".json")) {
+            textArea.setTextInitFactory(new BDJsonTextInitFactory(textArea));
+        }
+
+        BDTextAreaSearch search = new BDTextAreaSearch(textArea);
+        tab.setContent(search);
+        tab.getMapping().addChildren(search.getMapping());
+
+        return tab;
+    }
+
+    @Override
+    public void stop() throws Exception {
+        // 清理所有绑定和监听器
+        if (globalMapping != null) {
+            globalMapping.dispose();
+        }
+        System.out.println("应用程序关闭");
+        super.stop();
+    }
+
+    // 自定义ToggleSwitch组件（简化版）
+    static class ToggleSwitch extends HBox {
+        private final Label label = new Label();
+        private final Button button = new Button();
+
+        public ToggleSwitch(String text) {
+            label.setText(text);
+            label.setStyle("-fx-font-size: 14px;");
+
+            button.setPrefWidth(40);
+            button.setPrefHeight(20);
+            updateButtonStyle(false);
+
+            getChildren().addAll(label, button);
+            setSpacing(10);
+            setAlignment(Pos.CENTER_LEFT);
+
+            button.setOnAction(e -> {
+                setSelected(!isSelected());
+            });
+        }
+
+        public boolean isSelected() {
+            return button.getStyle().contains("-fx-background-color: #4CAF50");
+        }
+
+        public void setSelected(boolean selected) {
+            updateButtonStyle(selected);
+        }
+
+        private void updateButtonStyle(boolean selected) {
+            if (selected) {
+                button.setStyle("-fx-background-color: #4CAF50; -fx-background-radius: 10;");
+                button.setText("ON");
+                button.setTextFill(Color.WHITE);
+            } else {
+                button.setStyle("-fx-background-color: #CCCCCC; -fx-background-radius: 10;");
+                button.setText("OFF");
+                button.setTextFill(Color.BLACK);
+            }
+        }
+    }
 }

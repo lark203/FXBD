@@ -5651,6 +5651,14 @@ BDButton.circle {
     -fx-padding: 6px;
 }
 
+BDButton.icon{
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-radius: 5;
+    -fx-padding: 8px;
+    -fx-effect: none;
+}
+
 /*************************** 搜索框样式 ********************************************/
 BDSearchBox {
     -number-spacing: 21px;
@@ -5925,6 +5933,36 @@ BDSearchBox .content .right-pane {
 .bd-content-pane .bd-split-back{
     -fx-fill: rgba(216, 229, 245, 0.5);
 }
+.bd-content-pane .bd-content-tooltip{
+    -fx-background-color: black;
+    -fx-padding: 15px;
+    -fx-background-radius: 5px;
+}
+.bd-content-pane .bd-content-tooltip-text{
+    -fx-fill: white;
+    -fx-font-size: 15;
+}
+/*BDSideContent*/
+.bd-side-content{
+    -fx-background-color: #F8F9FB;
+}
+.bd-side-content-header{
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color:-color-bd-base3 ;
+}
+.bd-side-content-header .hide{
+}
+.bd-side-content-header-pre , .bd-side-content-header-post{
+    -fx-padding: 10;
+    -fx-spacing: 5;
+    -fx-background-color: #F8F9FB;
+}
+.bd-side-content-title {
+    -fx-font-size: 20;
+}
+.bd-side-content-content{
+    -fx-background-color: #F8F9FB;
+}
 /*BDSideBar*/
 .bd-side-bar-pane {
     -fx-spacing: 5px;
@@ -5981,7 +6019,7 @@ BDSearchBox .content .right-pane {
 
 .bd-side-bar-item {
     -fx-content-display: graphic-only;
-    -fx-background-radius: 50;
+    -fx-background-radius: 10;
     -fx-padding: 5px;
     -fx-effect: none;
 }
@@ -5996,5 +6034,3 @@ BDSearchBox .content .right-pane {
     -fx-fill: transparent;
     -fx-pref-height: 30;
 }
-
-

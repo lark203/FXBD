@@ -8,14 +8,16 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.SplitPane;
+import javafx.scene.input.DragEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 /*
@@ -29,11 +31,14 @@ public class BDContent extends BDControl {
     final SplitPane bottomSplitPane = new SplitPane();
     final SplitPane leftSplitPane = new SplitPane();
     final SplitPane horizontalSplitPane = new SplitPane(centerPane);
-      //  背景
+    final SplitPane verticalSplitPane = new SplitPane(horizontalSplitPane);
+    //  背景
     final Rectangle splitBack = new Rectangle();
-    final Pane horizontalRootPane = new AnchorPane(horizontalSplitPane, splitBack);
-    final SplitPane verticalSplitPane = new SplitPane(horizontalRootPane);
-    final BorderPane borderPane = new BorderPane(verticalSplitPane);
+    //  Tooltip
+    final Text text = new Text();
+    final Pane tooltip = new StackPane(text);
+    final Pane horizontalRootPane = new AnchorPane(verticalSplitPane, splitBack, tooltip);
+    final BorderPane borderPane = new BorderPane((horizontalRootPane));
     final LazyValue<BDSidebar> topSideBar = new LazyValue<>(() -> {
         BDSidebar topSidebar = new BDSidebar(this, BDDirection.TOP);
         borderPane.setTop(topSidebar);
@@ -54,12 +59,10 @@ public class BDContent extends BDControl {
         borderPane.setRight(rightSidebar);
         return rightSidebar;
     });
-
+    final Timeline splitBackAnimation = new Timeline();
     private final SimpleObjectProperty<Node> content = new SimpleObjectProperty<>();
-
     // 动画控制属性
     private final BooleanProperty animationEnabled = new SimpleBooleanProperty(true);
-
     boolean rightPaneShow = false;
     double rightPaneDivider = 0.5;
     boolean bottomPaneShow = false;
@@ -72,11 +75,11 @@ public class BDContent extends BDControl {
     double rightDivider = 0.8;
     boolean bottomShow = false;
     double bottomDivider = 0.8;
+    BDSidebar.BDDragData tempDragData;
     // 添加动画控制器，防止快速点击导致动画冲突
     private Timeline bottomAnimation;
     private Timeline leftAnimation;
     private Timeline rightAnimation;
-
 
     public Node getContent() {
         return content.get();
@@ -120,49 +123,50 @@ public class BDContent extends BDControl {
         return true;
     }
 
-    final Timeline splitBackAnimation = new Timeline();
-    BDSidebar.BDDragData tempDragData;
-    final void changeSplitBack(BDSidebar.BDDragData dragData) {
+    final void changeSplitBack(BDSidebar.BDDragData dragData, DragEvent event) {
+        dragHove(dragData, event.getSceneX(), event.getSceneY());
         if (dragData == null) {
             stopSplitBackAnimation();
             return;
         }
-        if (tempDragData != null && tempDragData.direction().equals(dragData.direction()) && tempDragData.inSequence().equals(dragData.inSequence()))return;
+        if (tempDragData != null && tempDragData.getDirection().equals(dragData.getDirection()) && tempDragData.getInSequence().equals(dragData.getInSequence()))
+            return;
         tempDragData = dragData;
         splitBackAnimation.stop();
         double layoutX = 0;
         double layoutY = 0;
         double height = 0;
         double width = 0;
-        switch (dragData.direction()) {
+        switch (dragData.getDirection()) {
             case LEFT -> {
                 layoutX = 0;
-                layoutY = dragData.inSequence().equals(BDInSequence.FRONT) ? 0 : horizontalSplitPane.getHeight() * leftPaneDivider;
-                width = horizontalSplitPane.getWidth() * leftDivider;
-                height = dragData.inSequence().equals(BDInSequence.FRONT) ? horizontalSplitPane.getHeight() * leftPaneDivider : horizontalSplitPane.getHeight() * (1 - leftPaneDivider);
+                layoutY = dragData.getInSequence().equals(BDInSequence.FRONT) ? 0 : horizontalRootPane.getHeight() * leftPaneDivider;
+                width = horizontalRootPane.getWidth() * leftDivider;
+                height = dragData.getInSequence().equals(BDInSequence.FRONT) ? horizontalRootPane.getHeight() * leftPaneDivider : horizontalRootPane.getHeight() * (1 - leftPaneDivider);
             }
             case RIGHT -> {
-                layoutX = horizontalSplitPane.getWidth() * rightDivider;
-                layoutY = dragData.inSequence().equals(BDInSequence.FRONT) ? 0 : horizontalSplitPane.getHeight() * rightPaneDivider;
-                width = horizontalSplitPane.getWidth() * (1 - rightDivider);
-                height = dragData.inSequence().equals(BDInSequence.FRONT) ? horizontalSplitPane.getHeight() * rightPaneDivider : horizontalSplitPane.getHeight() * (1 - rightPaneDivider);
+                layoutX = horizontalRootPane.getWidth() * rightDivider;
+                layoutY = dragData.getInSequence().equals(BDInSequence.FRONT) ? 0 : horizontalRootPane.getHeight() * rightPaneDivider;
+                width = horizontalRootPane.getWidth() * (1 - rightDivider);
+                height = dragData.getInSequence().equals(BDInSequence.FRONT) ? horizontalRootPane.getHeight() * rightPaneDivider : horizontalRootPane.getHeight() * (1 - rightPaneDivider);
 
             }
             case TOP -> throw new IllegalArgumentException("DragData 不能为 TOP");
             case BOTTOM -> {
-                layoutX = dragData.inSequence().equals(BDInSequence.FRONT) ? 0 : horizontalSplitPane.getWidth() * bottomPaneDivider;
-                layoutY = horizontalSplitPane.getHeight() * bottomDivider;
-                width = dragData.inSequence().equals(BDInSequence.FRONT)?horizontalSplitPane.getWidth() * bottomPaneDivider: horizontalSplitPane.getWidth() * (1 - bottomPaneDivider);
-                height = horizontalSplitPane.getHeight() * (1 - bottomDivider);
+                layoutX = dragData.getInSequence().equals(BDInSequence.FRONT) ? 0 : horizontalRootPane.getWidth() * bottomPaneDivider;
+                layoutY = horizontalRootPane.getHeight() * bottomDivider;
+                width = dragData.getInSequence().equals(BDInSequence.FRONT) ? horizontalRootPane.getWidth() * bottomPaneDivider : horizontalRootPane.getWidth() * (1 - bottomPaneDivider);
+                height = horizontalRootPane.getHeight() * (1 - bottomDivider);
             }
         }
-        KeyFrame o = new KeyFrame(ANIMATION_DURATION,new KeyValue(splitBack.opacityProperty(),1,Interpolator.LINEAR));
-        KeyFrame x = new KeyFrame(ANIMATION_DURATION,new KeyValue(splitBack.layoutXProperty(),layoutX,Interpolator.LINEAR));
-        KeyFrame y = new KeyFrame(ANIMATION_DURATION,new KeyValue(splitBack.layoutYProperty(),layoutY,Interpolator.LINEAR));
-        KeyFrame h = new KeyFrame(ANIMATION_DURATION,new KeyValue(splitBack.heightProperty(),height,Interpolator.LINEAR));
-        KeyFrame w = new KeyFrame(ANIMATION_DURATION,new KeyValue(splitBack.widthProperty(),width,Interpolator.LINEAR));
-        splitBackAnimation.getKeyFrames().setAll(o,x,y,h,w);
+        KeyFrame o = new KeyFrame(ANIMATION_DURATION, new KeyValue(splitBack.opacityProperty(), 1, Interpolator.LINEAR));
+        KeyFrame x = new KeyFrame(ANIMATION_DURATION, new KeyValue(splitBack.layoutXProperty(), layoutX, Interpolator.LINEAR));
+        KeyFrame y = new KeyFrame(ANIMATION_DURATION, new KeyValue(splitBack.layoutYProperty(), layoutY, Interpolator.LINEAR));
+        KeyFrame h = new KeyFrame(ANIMATION_DURATION, new KeyValue(splitBack.heightProperty(), height, Interpolator.LINEAR));
+        KeyFrame w = new KeyFrame(ANIMATION_DURATION, new KeyValue(splitBack.widthProperty(), width, Interpolator.LINEAR));
+        splitBackAnimation.getKeyFrames().setAll(o, x, y, h, w);
         splitBackAnimation.play();
+
     }
 
     // 停止指定方向的所有动画
@@ -581,17 +585,84 @@ public class BDContent extends BDControl {
         bottomSideBar.applyIfNotNone(BDSidebar::hideItemBack);
         leftSideBar.applyIfNotNone(BDSidebar::hideItemBack);
         stopSplitBackAnimation();
+        hideToolTip();
     }
 
-    void stopSplitBackAnimation(){
+    void stopSplitBackAnimation() {
         splitBackAnimation.stop();
-        KeyFrame o = new KeyFrame(ANIMATION_DURATION,new KeyValue(splitBack.opacityProperty(),0,Interpolator.LINEAR));
-        KeyFrame x = new KeyFrame(ANIMATION_DURATION,new KeyValue(splitBack.layoutXProperty(),horizontalSplitPane.getWidth()/2,Interpolator.LINEAR));
-        KeyFrame y = new KeyFrame(ANIMATION_DURATION,new KeyValue(splitBack.layoutYProperty(),horizontalSplitPane.getHeight()/2,Interpolator.LINEAR));
-        KeyFrame h = new KeyFrame(ANIMATION_DURATION,new KeyValue(splitBack.heightProperty(),0,Interpolator.LINEAR));
-        KeyFrame w = new KeyFrame(ANIMATION_DURATION,new KeyValue(splitBack.widthProperty(),0,Interpolator.LINEAR));
-        splitBackAnimation.getKeyFrames().setAll(o,x,y,h,w);
+        KeyFrame o = new KeyFrame(ANIMATION_DURATION, new KeyValue(splitBack.opacityProperty(), 0, Interpolator.LINEAR));
+        KeyFrame x = new KeyFrame(ANIMATION_DURATION, new KeyValue(splitBack.layoutXProperty(), horizontalSplitPane.getWidth() / 2, Interpolator.LINEAR));
+        KeyFrame y = new KeyFrame(ANIMATION_DURATION, new KeyValue(splitBack.layoutYProperty(), horizontalSplitPane.getHeight() / 2, Interpolator.LINEAR));
+        KeyFrame h = new KeyFrame(ANIMATION_DURATION, new KeyValue(splitBack.heightProperty(), 0, Interpolator.LINEAR));
+        KeyFrame w = new KeyFrame(ANIMATION_DURATION, new KeyValue(splitBack.widthProperty(), 0, Interpolator.LINEAR));
+        splitBackAnimation.getKeyFrames().setAll(o, x, y, h, w);
         splitBackAnimation.play();
         tempDragData = null;
     }
+
+    void hoverToolTipShow(BDSideBarItem item) {
+        tooltip.setVisible(true);
+        tooltip.setManaged(true);
+        text.setText(item.getName() + (item.getShortcutKey() == null ? "" : item.getShortcutKey()));
+        tooltip.layout();
+        tooltip.applyCss();
+        Bounds itemBounds = item.localToScene(item.getLayoutBounds());
+        Bounds rootBounds = horizontalRootPane.localToScene(horizontalRootPane.getLayoutBounds());
+        double tooltipWidth = tooltip.getWidth();
+        double tooltipHeight = tooltip.getHeight();
+        double layoutY = itemBounds.getMinY() - rootBounds.getMinY() - (tooltipHeight - itemBounds.getHeight()) / 2;
+        double layoutX = 0;
+        if (item.getDirection().equals(BDDirection.LEFT))
+            layoutX = 10;
+        else if (item.getDirection().equals(BDDirection.RIGHT))
+            layoutX = rootBounds.getWidth() - tooltipWidth - 10;
+        else if (item.getInSequence().equals(BDInSequence.FRONT))
+            layoutX = 10;
+        else layoutX = rootBounds.getWidth() - tooltipWidth - 10;
+        tooltip.setLayoutX(Math.min(layoutX, horizontalSplitPane.getWidth() - tooltipWidth));
+        tooltip.setLayoutY(Math.min(layoutY,horizontalSplitPane.getHeight() - tooltipHeight));
+    }
+
+    void dragHove(BDSidebar.BDDragData dragData, double scenex, double sceney) {
+        Bounds rootBounds = horizontalRootPane.localToScene(horizontalRootPane.getLayoutBounds());
+        sceney -= rootBounds.getMinY();
+        scenex -= rootBounds.getMinX();
+        if (dragData == null) {
+            tooltip.setManaged(true);
+            tooltip.setVisible(true);
+            text.setText("窗口独立显示");
+            tooltip.layout();
+            tooltip.applyCss();
+            tooltip.setLayoutX(scenex - tooltip.getWidth() / 2);
+            tooltip.setLayoutY(sceney + DRAG_ITEM.getHeight() / 2 + 20);
+            return;
+        }
+        String s = "移至";
+        if (dragData.getDirection().equals(BDDirection.LEFT))
+            s += " 左侧" + (dragData.inSequence.equals(BDInSequence.FRONT) ? " 顶部" : " 底部");
+        else if (dragData.getDirection().equals(BDDirection.RIGHT))
+            s += " 右侧" + (dragData.inSequence.equals(BDInSequence.FRONT) ? " 顶部" : " 底部");
+        else s += (dragData.inSequence.equals(BDInSequence.FRONT) ? " 左侧" : " 右侧") + " 底部";
+        tooltip.setVisible(true);
+        tooltip.setManaged(true);
+        text.setText(s);
+        tooltip.layout();
+        tooltip.applyCss();
+        double layoutx;
+        if (dragData.getDirection().equals(BDDirection.LEFT)) {
+            layoutx = scenex + DRAG_ITEM.getWidth() / 2 + 10;
+        } else if (dragData.getDirection().equals(BDDirection.RIGHT)) {
+            layoutx = scenex - DRAG_ITEM.getWidth() / 2 - tooltip.getWidth() - 10;
+        } else if (dragData.getInSequence().equals(BDInSequence.FRONT))
+            layoutx = scenex + DRAG_ITEM.getWidth() / 2 + 10;
+        else layoutx = scenex - DRAG_ITEM.getWidth() / 2 - tooltip.getWidth() - 10;
+        tooltip.setLayoutY(Math.min(sceney - tooltip.getHeight() / 2,horizontalSplitPane.getHeight() - tooltip.getHeight()));
+        tooltip.setLayoutX(Math.min(layoutx, horizontalSplitPane.getWidth() - tooltip.getWidth()));
+    }
+
+    void hideToolTip() {
+        tooltip.setVisible(false);
+        tooltip.setManaged(false);
+    }
+
 }

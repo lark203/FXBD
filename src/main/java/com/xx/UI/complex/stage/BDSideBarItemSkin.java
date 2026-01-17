@@ -4,6 +4,7 @@ import com.xx.UI.basic.BDButton;
 import com.xx.UI.basic.BDButtonSkin;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseDragEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 
 public class BDSideBarItemSkin extends BDButtonSkin {
@@ -21,10 +22,17 @@ public class BDSideBarItemSkin extends BDButtonSkin {
                     control.startFullDrag();
                     ((BDSideBarItem) control).handleDragDetected(event);
                 })
-                .addEventFilter(control, DragEvent.DRAG_DONE, event -> {
+                .addEventFilter(control, DragEvent.DRAG_DONE, _ -> {
                     ((BDSideBarItem) control).dragEnd();
                     BDContent.DRAG_ITEM = null;
-                });
+                })
+                .addEventFilter(control, MouseEvent.MOUSE_ENTERED,_->{
+                    ((BDSideBarItem) control).sidebar.get().content.hoverToolTipShow((BDSideBarItem) control);
+                })
+                .addEventFilter(control,MouseEvent.MOUSE_EXITED,_->{
+                    ((BDSideBarItem) control).sidebar.get().content.hideToolTip();
+                })
+        ;
     }
 
     @Override
@@ -40,6 +48,7 @@ public class BDSideBarItemSkin extends BDButtonSkin {
 
     @Override
     public void initUI() {
+
         control.getStyleClass().add("bd-side-bar-item");
     }
 }

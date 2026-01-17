@@ -1,38 +1,57 @@
 package com.xx.UI.complex.stage;
 
 import com.xx.UI.basic.BDButton;
-import com.xx.UI.util.LazyValue;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.css.CssMetaData;
+import javafx.css.Styleable;
+import javafx.css.StyleableObjectProperty;
+import javafx.css.StyleableProperty;
+import javafx.css.converter.PaintConverter;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import static com.xx.UI.complex.stage.BDSidebar.BD_SIDE_BAR_FORMAT;
 
 public class BDSideBarItem extends BDButton {
+    private static final String CSS_CLASS_NAME = "bd-side-bar-item";
     final SimpleObjectProperty<BDSidebar> sidebar = new SimpleObjectProperty<>();
-    final LazyValue<Stage> stage = new LazyValue<>(Stage::new);
+    final SimpleObjectProperty<Stage> stage = new SimpleObjectProperty<>();
     private final String name;
     private final BDSideContent sideContent;
     private final SimpleBooleanProperty windowOpen = new SimpleBooleanProperty(false);
     private final SimpleObjectProperty<BDDirection> direction = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<BDInSequence> inSequence = new SimpleObjectProperty<>();
+    BDSidebar tempSidebar;
     boolean tempAnimation = true;
     Integer tempIndex = 0;
+    Integer oldIndex = 0;
     double cachedWidth = -1;
     double cachedHeight = -1;
+    double x;
+    double y;
+    double w;
+    double h;
+    boolean init;
     private String shortcutKey;
     // 缓存拖拽图像
     private WritableImage cachedDragImage;
+    //    生成的stage的header填充颜色
+    private ObjectProperty<Paint> headerFill;
 
     public BDSideBarItem(String name, ImageView defaultIcon, ImageView selectIcon, BDDirection direction, BDInSequence inSequence, BDSideContent sideContent) {
         Objects.requireNonNull(name);
@@ -42,15 +61,39 @@ public class BDSideBarItem extends BDButton {
         Objects.requireNonNull(inSequence);
         this.name = name;
         this.sideContent = sideContent;
+        sideContent.setItem(this);
         setDirection(direction);
         this.inSequence.set(inSequence);
         setDefaultGraphic(defaultIcon);
         setSelectedGraphic(selectIcon);
+        getStyleClass().add(CSS_CLASS_NAME);
     }
 
     public BDSideBarItem(String name, String shortcutKey, ImageView defaultIcon, ImageView selectIcon, BDDirection direction, BDInSequence inSequence, BDSideContent sideContent) {
         this(name, defaultIcon, selectIcon, direction, inSequence, sideContent);
         this.shortcutKey = shortcutKey;
+    }
+
+    private ObjectProperty<Paint> headerFillProperty() {
+        if (headerFill == null)
+            this.headerFill = new StyleableObjectProperty<>(Color.web("#F8F9FB")) {
+
+                @Override
+                public CssMetaData<? extends Styleable, Paint> getCssMetaData() {
+                    return StyleableProperties.HEADER_FILL;
+                }
+
+                @Override
+                public Object getBean() {
+                    return BDSideBarItem.this;
+                }
+
+                @Override
+                public String getName() {
+                    return "-bd-header-fill";
+                }
+            };
+        return headerFill;
     }
 
     public String getName() {
@@ -105,15 +148,20 @@ public class BDSideBarItem extends BDButton {
 
     void drag() {
         sidebar.get().removeItemNode(this);
-
     }
 
     void dragEnd() {
-        if (sidebar.get() instanceof BDSidebar bar) {
+        if (tempSidebar instanceof BDSidebar bar) {
+            sidebar.set(bar);
             bar.addItemNode(this, tempIndex);
             if (isSelected()) bar.showSideBarItem(this);
-        } else
-            stage.get().show();
+        } else {
+            setSelected(false);
+            sidebar.get().addItemNode(this, oldIndex);
+            setWindowOpen(true);
+            setSelected(true);
+        }
+        tempSidebar = null;
         clearCachedDragImage();
     }
 
@@ -185,7 +233,6 @@ public class BDSideBarItem extends BDButton {
         return image;
     }
 
-
     /**
      * 创建缩放后的截图
      */
@@ -240,7 +287,6 @@ public class BDSideBarItem extends BDButton {
         return image;
     }
 
-
     /**
      * 使用ImageView和效果API添加阴影
      */
@@ -292,9 +338,85 @@ public class BDSideBarItem extends BDButton {
         cachedHeight = -1;
     }
 
+    Stage windowShow() {
+        sideContent.windowAction();
+        BDStageBuilder stageBuilder = new BDStageBuilder()
+                .setHeaderBar(new BDHeaderBarBuilder()
+                        .addLeading(sideContent.leadingPane)
+                        .addTrailing(sideContent.trailingPane)
+                        .setBackFill(headerFillProperty().get()))
+                .setContent(sideContent.contentPane);
+        Stage build = stageBuilder.build();
+        if (init) {
+            build.setX(x);
+            build.setY(y);
+            build.setWidth(w);
+            build.setHeight(h);
+        } else {
+            build.setWidth(500);
+            build.setHeight(600);
+        }
+        stage.set(build);
+        return build;
+    }
+
+    @Override
+    public List<CssMetaData<? extends Styleable, ?>> getControlCssMetaData() {
+        List<CssMetaData<? extends Styleable, ?>> controlCssMetaData = super.getControlCssMetaData();
+        List<CssMetaData<? extends Styleable, ?>> list = new ArrayList<>();
+        list.addAll(controlCssMetaData);
+        list.addAll(StyleableProperties.STYLEABLES);
+        return list;
+    }
+
+    void windowHide() {
+        stage.get().hide();
+    }
+
+    void windowClose() {
+        sideContent.sideBarContentAction();
+        Stage stage1 = stage.get();
+        init = true;
+        x = stage1.getX();
+        y = stage1.getY();
+        w = stage1.getWidth();
+        h = stage1.getHeight();
+        stage1.setScene(null);
+        stage1.close();
+        windowOpen.set(false);
+        setSelected(false);
+        stage.set(null);
+    }
+
     @Override
     protected Skin<?> createDefaultSkin() {
         return new BDSideBarItemSkin(this);
+    }
+
+    private static final class StyleableProperties {
+        private static final CssMetaData<BDSideBarItem, Paint> HEADER_FILL;
+        private static final List<CssMetaData<? extends Styleable, ?>> STYLEABLES;
+
+        static {
+            HEADER_FILL = new CssMetaData<>("-bd-header-fill", PaintConverter.getInstance(), Color.TRANSPARENT) {
+                @Override
+                public boolean isSettable(BDSideBarItem item) {
+                    return item.headerFill == null || !item.headerFill.isBound();
+                }
+
+                @Override
+                public StyleableProperty<Paint> getStyleableProperty(BDSideBarItem item) {
+                    return (StyleableProperty<Paint>) item.headerFillProperty();
+                }
+
+            };
+            @SuppressWarnings("rawtypes")
+            ArrayList var0 = new ArrayList(Control.getClassCssMetaData());
+            Collections.addAll(var0, HEADER_FILL);
+            final List<CssMetaData<? extends Styleable, ?>> styleables = new ArrayList<>(Control.getClassCssMetaData());
+            styleables.addAll(var0);
+            STYLEABLES = Collections.unmodifiableList(styleables);
+        }
     }
 }
 

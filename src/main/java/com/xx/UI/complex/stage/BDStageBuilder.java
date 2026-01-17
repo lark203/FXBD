@@ -5,17 +5,15 @@ import com.xx.UI.ui.BDIcon;
 import com.xx.UI.util.BDMapping;
 import com.xx.UI.util.Util;
 import javafx.application.Application;
-import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HeaderBar;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
 
 /**
  * BDStage构建器
@@ -24,13 +22,25 @@ import javafx.stage.StageStyle;
 public class BDStageBuilder {
     private final BDMapping mapping = new BDMapping();
     private final VBox root = new VBox();
-    private final Stage stage = new Stage();
+    double x = Double.MIN_VALUE;
+    double y = Double.MIN_VALUE;
+    double w = Double.MIN_VALUE;
+    double h = Double.MIN_VALUE;
 
     /**
      * 构造函数，初始化Stage和Scene
      */
     public BDStageBuilder() {
-
+        mapping.addEventHandler(stage, WindowEvent.WINDOW_SHOWN, _ -> {
+            if (x != Double.MIN_VALUE)
+                stage.setX(x);
+            if (y != Double.MIN_VALUE)
+                stage.setY(y);
+            if (w != Double.MIN_VALUE)
+                stage.setWidth(w);
+            if (h != Double.MIN_VALUE)
+                stage.setHeight(h);
+        });
     }
 
     /**
@@ -45,7 +55,7 @@ public class BDStageBuilder {
         root.getChildren().addFirst(headerBarBuilder.build());
         HeaderBar.setPrefButtonHeight(stage, 0);
         if (headerBarBuilder.title instanceof Text title)
-            mapping.bindBidirectional( stage.titleProperty(),title.textProperty());
+            mapping.bindBidirectional(stage.titleProperty(), title.textProperty());
         if (headerBarBuilder.maximizeButton instanceof BDButton maximizeButton)
             mapping.addListener(() -> {
                 if (stage.isMaximized()) {
@@ -57,7 +67,23 @@ public class BDStageBuilder {
                 }
             }, true, stage.maximizedProperty());
         return this;
-    }
+    }    private final Stage stage = new Stage() {
+        @Override
+        public void close() {
+            mapping.dispose();
+            super.close();
+        }
+
+        @Override
+        public void hide() {
+            x = stage.getX();
+            y = stage.getY();
+            w = stage.getWidth();
+            h = stage.getHeight();
+            super.hide();
+        }
+
+    };
 
     /**
      * 设置窗口内容
@@ -94,4 +120,6 @@ public class BDStageBuilder {
     public BDMapping getMapping() {
         return mapping;
     }
+
+
 }

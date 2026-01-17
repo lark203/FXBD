@@ -3,14 +3,11 @@ package com.xx.UI.complex.stage;
 import com.xx.UI.basic.BDButton;
 import com.xx.UI.ui.BDIcon;
 import com.xx.UI.util.Util;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.HeaderBar;
-import javafx.scene.layout.HeaderButtonType;
-import javafx.scene.layout.HeaderDragType;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 
 /**
@@ -18,9 +15,9 @@ import javafx.scene.text.Text;
  * 用于构建具有左右中三个区域的标题栏
  */
 public class BDHeaderBarBuilder {
+    final HBox centerBox = new HBox();
     private final HeaderBar headerBar = new HeaderBar();
     private final HBox leadingBox = new HBox();
-    final HBox centerBox = new HBox();
     private final HBox trailingBox = new HBox();
     Text title;
     ImageView icon;
@@ -157,6 +154,11 @@ public class BDHeaderBarBuilder {
         return this;
     }
 
+    public BDHeaderBarBuilder setBackFill(Paint paint) {
+        headerBar.setBackground(Background.fill(paint));
+        return this;
+    }
+
     /**
      * 创建工具按钮的通用方法
      *
@@ -180,11 +182,21 @@ public class BDHeaderBarBuilder {
      * @return 配置好的HeaderBar实例
      */
     HeaderBar build() {
-        HBox iconTitle = new HBox(icon, title);
+        HBox iconTitle = new HBox();
+        if (icon != null)
+            iconTitle.getChildren().add(icon);
+        if (title != null)
+            iconTitle.getChildren().add(title);
         iconTitle.getStyleClass().add("bd-header-bar-icon-title");
         leadingBox.getChildren().add(iconTitle);
 
-        HBox buttonBox = new HBox(minimizeButton,maximizeButton,closeButton);
+        HBox buttonBox = new HBox();
+        if (minimizeButton != null)
+            buttonBox.getChildren().add(minimizeButton);
+        if (maximizeButton != null)
+            buttonBox.getChildren().add(maximizeButton);
+        if (closeButton != null)
+            buttonBox.getChildren().add(closeButton);
         buttonBox.getStyleClass().add("bd-header-bar-button-box");
         trailingBox.getChildren().add(buttonBox);
         return headerBar;

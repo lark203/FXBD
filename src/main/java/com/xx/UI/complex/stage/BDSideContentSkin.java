@@ -1,10 +1,12 @@
 package com.xx.UI.complex.stage;
 
+import com.xx.UI.basic.BDButton;
+import com.xx.UI.ui.BDIcon;
 import com.xx.UI.ui.BDSkin;
+import com.xx.UI.util.Util;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.event.ActionEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 
@@ -16,43 +18,55 @@ public class BDSideContentSkin extends BDSkin<BDSideContent> {
     private final PseudoClass ANIMATION_CLASS;
     private final StackPane content;
     private final VBox root;
+    private final BDButton hide;
 
     protected BDSideContentSkin(BDSideContent bdSideContent) {
-        this.header = new AnchorPane();
-        this.prePane = new HBox();
+        this.header = bdSideContent.headerPane;
+        this.prePane = bdSideContent.leadingPane;
         this.title = new Text();
-        this.postPane = new HBox();
+        this.postPane = bdSideContent.trailingPane;
         this.ANIMATION_CLASS = PseudoClass.getPseudoClass("animation");
-        this.content = new StackPane();
-        this.root = new VBox();
+        this.content = bdSideContent.contentPane;
+        this.root = bdSideContent.rootPane;
+        hide = new BDButton();
         super(bdSideContent);
     }
 
     @Override
     public void initEvent() {
+        mapping.addEventHandler(hide, ActionEvent.ACTION,_-> control.item.setSelected(false));
     }
 
     @Override
     public void initProperty() {
         mapping.bindProperty(title.textProperty(), control.titleProperty())
                 .addListener(() -> postPane.pseudoClassStateChanged(ANIMATION_CLASS, control.isAnimated()), true, control.animatedProperty())
-                .addListener(()->{
+                .addListener(() -> {
                     content.getChildren().clear();
                     if (control.getContent() != null)
                         content.getChildren().add(control.getContent());
-                },true,control.contentProperty())
+                }, true, control.contentProperty())
                 .addListener(() -> {
                     prePane.getChildren().add(title);
                     if (!control.preNodeItemsProperty().isEmpty())
                         prePane.getChildren().addAll(control.preNodeItemsProperty().get());
                     if (!control.afterNodeItemsProperty().isEmpty())
                         postPane.getChildren().addAll(control.afterNodeItemsProperty().get());
-                }, true, (ObservableList<?>) control.preNodeItemsProperty(), control.afterNodeItemsProperty());
+                }, true, (ObservableList<?>) control.preNodeItemsProperty(), control.afterNodeItemsProperty())
+        ;
     }
 
     @Override
     public void initUI() {
+        control.addAfterNodeItem(control.dock);
+        control.dock.setDefaultGraphic(Util.getImageView(25,BDIcon.OPEN_IN_TOOL_WINDOW));
+        control.dock.setSelectable(false);
+        control.dock.getStyleClass().addAll("icon","dock");
         header.getChildren().addAll(prePane, postPane);
+        control.addAfterNodeItem(hide);
+        hide.setDefaultGraphic(Util.getImageView(25, BDIcon.HIDE));
+        hide.setSelectable(false);
+        hide.getStyleClass().addAll("icon","hide");
         AnchorPane.setLeftAnchor(prePane, .0);
         AnchorPane.setTopAnchor(prePane, .0);
         AnchorPane.setBottomAnchor(prePane, .0);
