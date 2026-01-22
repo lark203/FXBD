@@ -27,7 +27,7 @@ public class BDSideContent extends BDControl {
     private final SimpleListProperty<Node> fronNodeItems = new SimpleListProperty<>(FXCollections.observableArrayList()); // 侧边内容栏的前置节点列表
     private final SimpleListProperty<Node> afterNodeItems = new SimpleListProperty<>(FXCollections.observableArrayList()); // 侧边内容栏的后置节点列表
     private final SimpleObjectProperty<Node> content = new SimpleObjectProperty<>();// 侧边内容栏的内容
-    private final BooleanProperty animated = new SimpleBooleanProperty(true); // 侧边内容栏后侧节点是否使用动画
+    private final BooleanProperty show = new SimpleBooleanProperty(true); // 侧边内容栏后侧节点是否使用动画
     BDSideBarItem item;
 
     public BDSideContent() {
@@ -80,16 +80,16 @@ public class BDSideContent extends BDControl {
         this.title.set(title);
     }
 
-    public BooleanProperty animatedProperty() {
-        return animated;
+    public BooleanProperty showProperty() {
+        return show;
     }
 
-    public boolean isAnimated() {
-        return animated.get();
+    public boolean getShow() {
+        return show.get();
     }
 
-    public void setAnimated(boolean animated) {
-        this.animated.set(animated);
+    public void setShow(boolean show) {
+        this.show.set(show);
     }
 
     void windowAction() {

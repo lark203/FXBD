@@ -5953,12 +5953,23 @@ BDSearchBox .content .right-pane {
 .bd-side-content-header .hide{
 }
 .bd-side-content-header-pre , .bd-side-content-header-post{
-    -fx-padding: 10;
+    -fx-padding: 9.5;
     -fx-spacing: 5;
     -fx-background-color: #F8F9FB;
+    -fx-alignment: center;
+
+
+}
+.bd-side-content-header-post{
+    -fx-opacity: 0;
+    transition: -fx-opacity 0.3s ease;
+}
+.bd-side-content-header-post:show{
+    -fx-opacity: 1;
+    transition: -fx-opacity 0.3s ease;
 }
 .bd-side-content-title {
-    -fx-font-size: 20;
+    -fx-font-size: 15;
 }
 .bd-side-content-content{
     -fx-background-color: #F8F9FB;

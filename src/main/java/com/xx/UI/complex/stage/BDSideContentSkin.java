@@ -4,9 +4,11 @@ import com.xx.UI.basic.BDButton;
 import com.xx.UI.ui.BDIcon;
 import com.xx.UI.ui.BDSkin;
 import com.xx.UI.util.Util;
+import javafx.beans.property.BooleanProperty;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 
@@ -15,17 +17,18 @@ public class BDSideContentSkin extends BDSkin<BDSideContent> {
     private final HBox prePane;
     private final Text title;
     private final HBox postPane;
-    private final PseudoClass ANIMATION_CLASS;
+    private final PseudoClass SHOW_CLASS;
     private final StackPane content;
     private final VBox root;
     private final BDButton hide;
+    private BooleanProperty isFocusOn;
 
     protected BDSideContentSkin(BDSideContent bdSideContent) {
         this.header = bdSideContent.headerPane;
         this.prePane = bdSideContent.leadingPane;
         this.title = new Text();
         this.postPane = bdSideContent.trailingPane;
-        this.ANIMATION_CLASS = PseudoClass.getPseudoClass("animation");
+        this.SHOW_CLASS = PseudoClass.getPseudoClass("show");
         this.content = bdSideContent.contentPane;
         this.root = bdSideContent.rootPane;
         hide = new BDButton();
@@ -34,13 +37,16 @@ public class BDSideContentSkin extends BDSkin<BDSideContent> {
 
     @Override
     public void initEvent() {
-        mapping.addEventHandler(hide, ActionEvent.ACTION,_-> control.item.setSelected(false));
+        mapping.addEventHandler(hide, ActionEvent.ACTION,_-> control.item.setSelected(false))
+                .addEventFilter(root, MouseEvent.MOUSE_ENTERED,_->control.setShow(true))
+                .addEventFilter(root, MouseEvent.MOUSE_EXITED,_->control.setShow(false));
     }
 
     @Override
     public void initProperty() {
         mapping.bindProperty(title.textProperty(), control.titleProperty())
-                .addListener(() -> postPane.pseudoClassStateChanged(ANIMATION_CLASS, control.isAnimated()), true, control.animatedProperty())
+                .addListener(() -> postPane.pseudoClassStateChanged(SHOW_CLASS, control.getShow()), true,
+                        control.showProperty(),isFocusOn)
                 .addListener(() -> {
                     content.getChildren().clear();
                     if (control.getContent() != null)
@@ -52,19 +58,19 @@ public class BDSideContentSkin extends BDSkin<BDSideContent> {
                         prePane.getChildren().addAll(control.preNodeItemsProperty().get());
                     if (!control.afterNodeItemsProperty().isEmpty())
                         postPane.getChildren().addAll(control.afterNodeItemsProperty().get());
-                }, true, (ObservableList<?>) control.preNodeItemsProperty(), control.afterNodeItemsProperty())
-        ;
+                }, true, (ObservableList<?>) control.preNodeItemsProperty(), control.afterNodeItemsProperty());
     }
 
     @Override
     public void initUI() {
+        isFocusOn = Util.focusWithIn(control,mapping);
         control.addAfterNodeItem(control.dock);
-        control.dock.setDefaultGraphic(Util.getImageView(25,BDIcon.OPEN_IN_TOOL_WINDOW));
+        control.dock.setDefaultGraphic(Util.getImageView(15,BDIcon.OPEN_IN_TOOL_WINDOW));
         control.dock.setSelectable(false);
         control.dock.getStyleClass().addAll("icon","dock");
         header.getChildren().addAll(prePane, postPane);
         control.addAfterNodeItem(hide);
-        hide.setDefaultGraphic(Util.getImageView(25, BDIcon.HIDE));
+        hide.setDefaultGraphic(Util.getImageView(15, BDIcon.HIDE));
         hide.setSelectable(false);
         hide.getStyleClass().addAll("icon","hide");
         AnchorPane.setLeftAnchor(prePane, .0);
