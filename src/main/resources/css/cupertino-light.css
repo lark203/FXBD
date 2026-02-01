@@ -6104,7 +6104,6 @@ BDSearchBox .content .right-pane {
 /* 基础进度条样式 */
 .bd-progress-bar {
     -fx-pref-height: 4px;
-    -fx-min-width: 200px;
     -fx-background-color: #e0e0e0;
     -fx-background-radius: 2px;
     -fx-padding: 0;
@@ -6269,4 +6268,43 @@ BDSearchBox .content .right-pane {
         #0078d4 25%,
         #0078d4 75%,
         transparent 100%);
+}
+/*************************** bd-task-control-center - IntelliJ IDEA Style ********************************************/
+.bd-task-control-center {
+    -fx-alignment: center;
+    -fx-spacing: 10px;
+    -fx-padding: 10px;
+    -fx-background-radius: 5px;
+}
+.bd-task-control-center:hover {
+    -fx-background-color: #F7F8FA;
+}
+.bd-task-control-center-size{
+    -fx-fill: #666666;
+}
+.bd-task-control-center-title{
+    -fx-fill: #005a9e;
+}
+
+/* 基础进度条样式 */
+.bd-task-control-center-bar {
+    -fx-pref-height: 4px;
+    -fx-background-color: #e0e0e0;
+    -fx-background-radius: 2px;
+    -fx-padding: 0;
+}
+
+.bd-control-center-stage-empty-content{
+    -fx-spacing: 10px;
+     -fx-alignment: center-left;
+}
+.bd-control-center-stage-empty-text{
+    -fx-font-size: 20;
+}
+.bd-task-control-center-stage-title{
+     -fx-font-size: 20;
+}
+.bd-task-control-center-stage-content{
+    -fx-padding: 20px;
+    -fx-alignment: center;
 }

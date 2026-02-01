@@ -37,7 +37,6 @@ public class BDTabItemSkin extends BDSkin<BDTabItem> {
     private static final String CTRL_F4_SHORTCUT = "Ctrl+F4";
     private static final double RECTANGLE_HEIGHT = 5.0;
     private static final double SCROLL_FACTOR = 1.05;
-    private final PseudoClass CLOSED_PSEUDO_CLASS = PseudoClass.getPseudoClass("show");
     // UI组件
     private final SplitPane splitPane;
     private final AnchorPane rootPane;

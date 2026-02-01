@@ -1,6 +1,8 @@
 package com.xx.demo;
 
 import com.xx.UI.basic.button.BDButton;
+import com.xx.UI.basic.progressBar.BDTask;
+import com.xx.UI.basic.progressBar.BDTaskControlCenter;
 import com.xx.UI.complex.BDTabPane.BDTab;
 import com.xx.UI.complex.BDTabPane.BDTabItem;
 import com.xx.UI.complex.BDTabPane.BDTabPane;
@@ -15,6 +17,7 @@ import com.xx.UI.util.BDMapping;
 import com.xx.UI.util.Util;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -24,6 +27,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.TimeoutException;
 
 /**
  * BDStage 演示程序 - 增强版
@@ -33,7 +37,103 @@ public class BDStageDemo extends Application {
     private final BDMapping globalMapping = new BDMapping();
     BDTextArea consoleTextArea = initConsoleTextArea();
 
-    private static BDSideBarItem getHelpItem() {
+    @Override
+    public void start(Stage stage) throws Exception {
+
+        //        创建工具
+        BDSideBarItem projectItem = getProjectItem();
+        BDSideBarItem searchItem = getSearchItem();
+        BDSideBarItem gitItem = getGitItem();
+        BDSideBarItem bookmarkItem = getBookmarkItem();
+        BDSideBarItem settingItem = getSettingItem();
+        BDSideBarItem helpItem = getHelpItem();
+        BDSideBarItem consoleItem = getConsoleItem();
+        BDSideBarItem outputItem = getOutputItem();
+        BDSideBarItem debugItem = getDebugItem();
+        BDTabItem rootTabItem = getRootTabItem();
+        HBox toolbar = getToolbar(rootTabItem);
+         BDTaskControlCenter controlCenter = new BDTaskControlCenter();
+        BDSideBarItem taskItem = getTaskItem(controlCenter);
+        taskItem.setPadding(new Insets(10));
+
+        // 构建标题栏
+        BDHeaderBarBuilder headerBarBuilder = new BDHeaderBarBuilder()
+                .addIcon(Util.getImageView(25, BDIcon.IDEA_MODULE))
+                .addTitle("BD Stage Demo 测试 ")
+                .addCenter(toolbar)
+                .addMinimizeButton()
+                .addMaximizeButton()
+                .addCloseButton();
+
+        // 构建内容
+        BDContentBuilder contentBuilder = new BDContentBuilder()
+                .addSideNode(projectItem, searchItem, gitItem, bookmarkItem, helpItem, settingItem, consoleItem, outputItem, debugItem,taskItem)
+                .addSideNode(BDDirection.BOTTOM, BDInSequence.AFTER, controlCenter)
+                .addCenterNode(new BDTabPane(rootTabItem));
+
+        // 构建主窗口
+        Stage bdStage = new BDStageBuilder()
+                .setHeaderBar(headerBarBuilder)
+                .setContent(contentBuilder.build())
+                .setStyle(Util.getResourceUrl("/css/cupertino-light.css"))
+                .build();
+        // 显示窗口
+        bdStage.setWidth(1200);
+        bdStage.setHeight(1000);
+        bdStage.show();
+//        添加事件
+        windowAction(bdStage, rootTabItem);
+    }
+
+    private BDSideBarItem getTaskItem(BDTaskControlCenter controlCenter){
+        BDSideContent taskControl = new BDSideContent();
+        taskControl.setTitle("任务控制中心");
+        BDButton insertTask1 = new BDButton("插入任务", Util.getImageView(20, BDIcon.ADD_DARK));
+        insertTask1.setSelectable(false);
+        taskControl.setContent(insertTask1);
+        globalMapping.addEventHandler(insertTask1, ActionEvent.ACTION, _ -> controlCenter.pushTask(getSimpleTask(),true,true));
+        return new BDSideBarItem("任务",Util.getImageView(30,BDIcon.RUN),Util.getImageView(30,BDIcon.RUN_DARK),BDDirection.BOTTOM,BDInSequence.FRONT,taskControl);
+    }
+     private BDTask<String> getSimpleTask() {
+        BDTask<String> task = new BDTask<>() {
+            @Override
+            protected String work() throws InterruptedException, TimeoutException {
+                for (int i = 0; i < 101; i++) {
+                    /*
+                     * 必须调用此函数！！！只有这样，暂停、超时等功能才生效。
+                     * */
+                    checkState();
+                    Thread.sleep(100);
+                    updateProgress(i, 100);
+                    updateMessage("正在加载(%d/%d)".formatted(i, 100));
+                    updateTitle("更新测试");
+                }
+                return "done";
+            }
+
+            @Override
+            protected void succeeded() {
+                super.succeeded();
+                updateMessage("更新成功");
+            }
+
+            @Override
+            protected void cancelled() {
+                super.cancelled();
+                updateMessage("取消任务");
+            }
+
+            @Override
+            protected void failed() {
+                super.failed();
+                updateMessage("任务执行失败");
+            }
+        };
+        new Thread(task).start();
+        return task;
+    }
+
+    private BDSideBarItem getHelpItem() {
         // 构建内容区域 - 帮助侧边栏 (RIGHT, FRONT)
         BDSideContent helpContent = new BDSideContent();
         helpContent.setTitle("帮助和文档");
@@ -59,7 +159,7 @@ public class BDStageDemo extends Application {
         return new BDSideBarItem("帮助", Util.getImageView(30, BDIcon.HELP), Util.getImageView(30, BDIcon.HELP_DARK), BDDirection.RIGHT, BDInSequence.FRONT, helpContent);
     }
 
-    private static BDSideBarItem getGitItem() {
+    private BDSideBarItem getGitItem() {
         // 构建内容区域 - Git侧边栏 (LEFT, AFTER)
         BDSideContent gitContent = new BDSideContent();
         gitContent.setTitle("版本控制");
@@ -79,7 +179,7 @@ public class BDStageDemo extends Application {
         return new BDSideBarItem("Git", Util.getImageView(30, BDIcon.FOLDER_GITHUB), Util.getImageView(30, BDIcon.FOLDER_GITHUB_DARK), BDDirection.LEFT, BDInSequence.AFTER, gitContent);
     }
 
-    private static BDSideBarItem getSearchItem() {
+    private BDSideBarItem getSearchItem() {
         // 构建内容区域 - 搜索侧边栏 (LEFT, AFTER)
         BDSideContent searchContent = new BDSideContent();
         searchContent.setTitle("智能搜索");
@@ -99,7 +199,7 @@ public class BDStageDemo extends Application {
         return new BDSideBarItem("搜索", Util.getImageView(30, BDIcon.SEARCH), Util.getImageView(30, BDIcon.SEARCH_DARK), BDDirection.LEFT, BDInSequence.AFTER, searchContent);
     }
 
-    private static BDSideBarItem getDebugItem() {
+    private BDSideBarItem getDebugItem() {
         // 构建内容区域 - 调试侧边栏 (BOTTOM, FRONT)
         BDSideContent debugContent = new BDSideContent();
         debugContent.setTitle("调试工具");
@@ -131,7 +231,7 @@ public class BDStageDemo extends Application {
         return new BDSideBarItem("调试", Util.getImageView(30, BDIcon.DEBUG), Util.getImageView(30, BDIcon.DEBUG_DARK), BDDirection.BOTTOM, BDInSequence.FRONT, debugContent);
     }
 
-    private static BDSideBarItem getOutputItem() {
+    private BDSideBarItem getOutputItem() {
         // 构建内容区域 - 输出侧边栏 (BOTTOM, AFTER)
         BDSideContent outputContent = new BDSideContent();
         outputContent.setTitle("构建和输出");
@@ -153,50 +253,6 @@ public class BDStageDemo extends Application {
         return new BDSideBarItem("输出", Util.getImageView(30, BDIcon.DBMS_OUTPUT), Util.getImageView(30, BDIcon.DBMS_OUTPUT_DARK), BDDirection.BOTTOM, BDInSequence.AFTER, outputContent);
     }
 
-    @Override
-    public void start(Stage stage) throws Exception {
-
-        //        创建工具
-        BDSideBarItem projectItem = getProjectItem();
-        BDSideBarItem searchItem = getSearchItem();
-        BDSideBarItem gitItem = getGitItem();
-        BDSideBarItem bookmarkItem = getBookmarkItem();
-        BDSideBarItem settingItem = getSettingItem();
-        BDSideBarItem helpItem = getHelpItem();
-        BDSideBarItem consoleItem = getConsoleItem();
-        BDSideBarItem outputItem = getOutputItem();
-        BDSideBarItem debugItem = getDebugItem();
-        BDTabItem rootTabItem = getRootTabItem();
-        HBox toolbar = getToolbar(rootTabItem);
-
-        // 构建标题栏
-        BDHeaderBarBuilder headerBarBuilder = new BDHeaderBarBuilder()
-                .addIcon(Util.getImageView(25, BDIcon.IDEA_MODULE))
-                .addTitle("BD Stage Demo 测试 ")
-                .addCenter(toolbar)
-                .addMinimizeButton()
-                .addMaximizeButton()
-                .addCloseButton();
-
-        // 构建内容
-        BDContentBuilder contentBuilder = new BDContentBuilder()
-                .addSideNode(projectItem, searchItem, gitItem, bookmarkItem, helpItem, settingItem, consoleItem, outputItem, debugItem)
-                .addSideNode(BDDirection.BOTTOM, BDInSequence.AFTER, new BDButton("任务中心"))
-                .addCenterNode(new BDTabPane(rootTabItem));
-
-        // 构建主窗口
-        Stage bdStage = new BDStageBuilder()
-                .setContent(contentBuilder.build())
-                .setStyle(Util.getResourceUrl("/css/cupertino-light.css"))
-                .setHeaderBar(headerBarBuilder)
-                .build();
-        // 显示窗口
-        bdStage.setWidth(1200);
-        bdStage.setHeight(1000);
-        bdStage.show();
-//        添加事件
-        windowAction(bdStage, rootTabItem);
-    }
 
     private void windowAction(Stage bdStage, BDTabItem rootTabItem) {
         // 添加窗口事件监听器

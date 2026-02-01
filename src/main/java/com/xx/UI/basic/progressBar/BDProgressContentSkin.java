@@ -56,7 +56,6 @@ public class BDProgressContentSkin extends BDSkin<BDProgressContent> {
         allPseudoClasses = List.of(RUNNING, PAUSE, FAILED, SUCCEEDED);
         root.getChildren().addAll(title, barContent, new VBox(state, message));
         barContent.getChildren().addAll(bar, pause, close);
-        // 关键修复：确保 bar 能填充剩余空间
         bar.setMaxWidth(Double.MAX_VALUE);  // 1. 允许 bar 无限扩展
         HBox.setHgrow(bar, Priority.ALWAYS); // 2. 设置增长优先级
         barContent.setMaxWidth(Double.MAX_VALUE);
@@ -97,32 +96,36 @@ public class BDProgressContentSkin extends BDSkin<BDProgressContent> {
                                 .bindProperty(message.textProperty(), control.getTask().messageProperty())
                                 .bindProperty(bar.progressProperty(), control.getTask().progressProperty())
                                 .addListener(() -> {
-                                    updateState();
-                                    Worker.State state = control.getTask().getState();
-                                    switch (state) {
-                                        case RUNNING, READY, SCHEDULED -> {
-                                            if (control.getTask().isPaused()) {
-                                                pause.setDisable(false);
-                                                close.setDisable(false);
-                                                updatePseudoClass(PAUSE);
-                                            } else {
-                                                pause.setDisable(false);
-                                                close.setDisable(false);
-                                                updatePseudoClass(RUNNING);
+                                            updateState();
+                                            BDTask<?> task = control.getTask();
+                                            if (task == null) return;
+                                            Worker.State state = task.getState();
+                                            switch (state) {
+                                                case RUNNING, READY, SCHEDULED -> {
+                                                    if (task.isPaused()) {
+                                                        pause.setDisable(false);
+                                                        close.setDisable(false);
+                                                        updatePseudoClass(PAUSE);
+                                                    } else {
+                                                        pause.setDisable(false);
+                                                        close.setDisable(false);
+                                                        updatePseudoClass(RUNNING);
+                                                    }
+                                                }
+                                                case FAILED, CANCELLED -> {
+                                                    pause.setDisable(true);
+                                                    close.setDisable(true);
+                                                    updatePseudoClass(FAILED);
+                                                }
+                                                case SUCCEEDED -> {
+                                                    pause.setDisable(true);
+                                                    close.setDisable(true);
+                                                    updatePseudoClass(SUCCEEDED);
+                                                }
                                             }
-                                        }
-                                        case FAILED, CANCELLED -> {
-                                            pause.setDisable(true);
-                                            close.setDisable(true);
-                                            updatePseudoClass(FAILED);
-                                        }
-                                        case SUCCEEDED -> {
-                                            pause.setDisable(true);
-                                            close.setDisable(true);
-                                            updatePseudoClass(SUCCEEDED);
-                                        }
-                                    }
-                                }, true, control.getTask().stateProperty(), control.getTask().pausedProperty());
+                                        }, true,
+                                        control.getTask().stateProperty(),
+                                        control.getTask().pausedProperty());
                     else {
                         bar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
                         title.setText("---");
@@ -174,7 +177,7 @@ public class BDProgressContentSkin extends BDSkin<BDProgressContent> {
                     if (close.isHover()) {
                         state.setText("结束任务");
                         updatePseudoClass(state, FAILED);
-                    } else if (pause.isSelected()){
+                    } else if (pause.isSelected()) {
                         state.setText(pause.isHover() ? "继续任务" : "任务暂停");
                         updatePseudoClass(state, pause.isHover() ? RUNNING : PAUSE);
                     } else {

@@ -8,6 +8,7 @@ import com.xx.UI.util.BDMapping;
 import com.xx.UI.util.Util;
 import javafx.beans.property.*;
 import javafx.css.PseudoClass;
+import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -402,12 +403,14 @@ public class BDTab extends BDControl {
         text.getStyleClass().add("tab-title");
 
         BDButton closeButton = new BDButton();
-        closeButton.setOnAction(event -> {
+        mapping.addEventHandler(closeButton, ActionEvent.ACTION,event -> {
             close();
             popup.hide();
             event.consume();
+        }).addEventHandler(hBox,MouseEvent.MOUSE_CLICKED,_->{
+            show();
+            popup.hide();
         });
-        hBox.setOnMouseClicked(_-> show());
         Tooltip tooltip = new Tooltip();
         tooltip.setText("关闭");
         closeButton.setTooltip(tooltip);
